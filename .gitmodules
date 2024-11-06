@@ -1,0 +1,3 @@
+[submodule "dipha"]
+	path = dipha
+	url = https://github.com/DIPHA/dipha
