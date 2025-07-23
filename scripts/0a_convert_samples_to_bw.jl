@@ -12,8 +12,8 @@ import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET, DATA_CONFIG
 # import .CONFIG: dipha_img_export_path
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Image loading
-set1 = ["Artysta", "wystawa_fejkowa"]# , "noise_images", "Artysta_heatmaps"]
-set2 = ["Real_Kandinsky", "Faked_Kandinsky"]
+set1 = ["art", "pseudoart"]# , "noise_images", "art_heatmaps"]
+set2 = ["Real_Kandinsky", "pseudoartd_Kandinsky"]
 set3 = ["Pollock", "Rothko", "Mark"]
 set4 = ["textures", "non-textures"]
 set5 = ["Malewicz", "Rothko", "Jarema", "Richter", "Mark"]

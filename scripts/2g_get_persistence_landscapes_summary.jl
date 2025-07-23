@@ -33,7 +33,7 @@ readrows(file_name) = DelimitedFiles.readdlm(file_name, ',', Float64, '\n')
 landscapes_dir(args...) = datadir("exp_pro", "section2", script_prefix, "landscapes_df", args...)
 
 ## ===-===-===-===-===-===-===-===-===-===-
-set1 = ["Artysta", "wystawa_fejkowa"]
+set1 = ["art", "pseudoart"]
 data_sets = set1
 
 useddata = join(data_sets, "-")

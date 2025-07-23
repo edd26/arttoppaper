@@ -74,8 +74,8 @@ function set_up_ax_distro_plt2(fgl; scatter_label="")
     return ax_scatter, ax_boxplot, ax_estimate
 end
 
-function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estimate::Makie.Axis, art_vals::Vector{Float64}, fake_vals::Vector{Float64}; art_val=3, fake_val=6, color_palette=Makie.wong_colors(), skip_violin=false)
-    return do_distro_plot(ax_scatter, ax_boxplot, ax_estimate, [art_vals, fake_vals]; category_values=[art_val, fake_val], color_palette=color_palette, skip_violin=skip_violin)
+function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estimate::Makie.Axis, art_vals::Vector{Float64}, pseudoart_vals::Vector{Float64}; art_val=3, pseudoart_val=6, color_palette=Makie.wong_colors(), skip_violin=false)
+    return do_distro_plot(ax_scatter, ax_boxplot, ax_estimate, [art_vals, pseudoart_vals]; category_values=[art_val, pseudoart_val], color_palette=color_palette, skip_violin=skip_violin)
 end
 
 function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estimate::Makie.Axis, all_values, me_values; category_values=[3, 6], color_palette=Makie.wong_colors(), skip_violin=false)
@@ -118,7 +118,7 @@ function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estim
     )
 
     if !skip_violin
-        # fake_x_vals = [1 for k in fake_vals]
+        # pseudoart_x_vals = [1 for k in pseudoart_vals]
         violin_kwargs = (
             side=:right,
             strokecolor=:black,
@@ -167,7 +167,7 @@ function do_distro_plot(
         markersize=8,
         jitter_width=0.3,
         side_nudge=0.0,
-        # color=[art_color, fake_color]
+        # color=[art_color, pseudoart_color]
         color=color_palette[categories]
     )
     CairoMakie.boxplot!(ax_boxplot,
@@ -180,7 +180,7 @@ function do_distro_plot(
         color=color_palette[categories]
     )
 
-    # fake_x_vals = [1 for k in fake_vals]
+    # pseudoart_x_vals = [1 for k in pseudoart_vals]
     if !skip_violin
         violin_kwargs = (
             side=:right,

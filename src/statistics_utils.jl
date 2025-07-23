@@ -40,23 +40,23 @@ function get_friedman_test(session_df; do_julia_firedman=true, do_fdr_miller=fal
 end
 
 
-function get_p_values(measure_vals_art, measure_vals_fake; do_KW=false, do_mann_whitney=false, do_signed_rank=false, do_fdr_miller=false)
+function get_p_values(measure_vals_art, measure_vals_pseudoart; do_KW=false, do_mann_whitney=false, do_signed_rank=false, do_fdr_miller=false)
     if do_KW
-        stat_test_result = KruskalWallisTest(measure_vals_art, measure_vals_fake)
+        stat_test_result = KruskalWallisTest(measure_vals_art, measure_vals_pseudoart)
         test_p_value = pvalue(stat_test_result)
     elseif do_mann_whitney
-        stat_test_result = MannWhitneyUTest(measure_vals_art, measure_vals_fake)
+        stat_test_result = MannWhitneyUTest(measure_vals_art, measure_vals_pseudoart)
         test_p_value = pvalue(stat_test_result)
         println(stat_test_result)
     elseif do_signed_rank
-        stat_test_result = SignedRankTest(measure_vals_art, measure_vals_fake)
+        stat_test_result = SignedRankTest(measure_vals_art, measure_vals_pseudoart)
         test_p_value = pvalue(stat_test_result)
     elseif do_fdr_miller
         stat_test_result = Nothing
         test_p_value = get_friedman_test(session_df; do_julia_firedman=false, do_fdr_miller=do_fdr_miller)
     else
         @warn "Producing p-values with default One Way ANOVA"
-        stat_test_result = OneWayANOVATest(measure_vals_art, measure_vals_fake)
+        stat_test_result = OneWayANOVATest(measure_vals_art, measure_vals_pseudoart)
         test_p_value = pvalue(stat_test_result)
     end
     return stat_test_result, test_p_value

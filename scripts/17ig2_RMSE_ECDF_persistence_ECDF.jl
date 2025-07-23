@@ -237,8 +237,8 @@ ECDF_looking_size_df = DataFrame(
     :total_not_looked_items => Float64[],
     :total_items => Float64[],
 )
-# mse_img = populate_dict!(Dict(), [["art", "fake"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
-# mean_error_img = populate_dict!(Dict(), [["art", "fake"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
+# mse_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
+# mean_error_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
 
 func = parameters_vec[2]
 for func = parameters_vec[func_range]
@@ -255,8 +255,8 @@ for func = parameters_vec[func_range]
         ecdf_range = 0:0.1:256
     end
 
-    d = ["art", "fake"][1]
-    for d in ["art", "fake"]
+    d = ["art", "pseudoart"][1]
+    for d in ["art", "pseudoart"]
         data_related_df = filter(row -> row.data_name == d, func_related_df)
         images = data_related_df.img_name |> unique
 

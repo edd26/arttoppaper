@@ -5,7 +5,7 @@ using DrWatson
 "2g_get_persistence_landscapes_summary.jl" |> scriptsdir |> include
 
 using CairoMakie
-import .CONFIG: art_images_names, names_to_order, fake_images_names
+import .CONFIG: art_images_names, names_to_order, pseudoart_images_names
 using Pipe
 # ===-===-===-===-===-===-===-===-===-
 
@@ -30,16 +30,16 @@ data_labels = [replace.(l, "_$(DATA_CONFIG)" => "") for l in lanscapes_df_dim0.f
 art_numbers = [parse(Int, just_name) for just_name in data_labels[1:12]]
 art_sorting = sortperm(art_numbers)
 
-fake_numbers = [names_to_order[just_name] for just_name in data_labels[13:end]]
-fake_sorting = sortperm(fake_numbers)
+pseudoart_numbers = [names_to_order[just_name] for just_name in data_labels[13:end]]
+pseudoart_sorting = sortperm(pseudoart_numbers)
 
 lanscapes_df_dim0 = vcat(
     lanscapes_df_dim0[1:12, :][art_sorting, :],
-    lanscapes_df_dim0[13:end, :][fake_sorting, :])
+    lanscapes_df_dim0[13:end, :][pseudoart_sorting, :])
 
 lanscapes_df_dim1 = vcat(
     lanscapes_df_dim1[1:12, :][art_sorting, :],
-    lanscapes_df_dim1[13:end, :][fake_sorting, :])
+    lanscapes_df_dim1[13:end, :][pseudoart_sorting, :])
 # ===-===-===-
 dim0_lands = lanscapes_df_dim0.landscape
 dim1_lands = lanscapes_df_dim1.landscape
@@ -76,7 +76,7 @@ end
 data_labels = [replace.(l, "_$(DATA_CONFIG)" => "") for l in lanscapes_df_dim0.file]
 
 art_names = [art_images_names[parse(Int, just_name)] for just_name in data_labels[1:12]]
-fake_names = [@pipe names_to_order[just_name] |> fake_images_names[_] for just_name in data_labels[13:end]]
+pseudoart_names = [@pipe names_to_order[just_name] |> pseudoart_images_names[_] for just_name in data_labels[13:end]]
 
 
 tick_values = 1:total_landscapes
@@ -90,7 +90,7 @@ for (k, l) in art_names |> enumerate
     end
     push!(tick_labels, "$(k): " * l * "...")
 end
-for (k, l) in fake_names |> enumerate
+for (k, l) in pseudoart_names |> enumerate
     @info l
     while length(l) > target_len
         l = chop(l)
@@ -100,7 +100,7 @@ end
 
 colours_palette = Makie.wong_colors();
 art_colour = colours_palette[3];
-fake_colour = colours_palette[6];
+pseudoart_colour = colours_palette[6];
 empty_matrix = fill(NaN, total_landscapes, total_landscapes);
 
 plt_height = 400
@@ -118,8 +118,8 @@ ax_heatmap_dim0_labels = CairoMakie.Axis(
     fgl[1, 1];
     xticks=(tick_values[13:end], tick_labels[13:end]),
     yticks=(tick_values[13:end], tick_labels[13:end]),
-    xticklabelcolor=fake_colour,
-    yticklabelcolor=fake_colour,
+    xticklabelcolor=pseudoart_colour,
+    yticklabelcolor=pseudoart_colour,
     yaxisposition=:right,
     hmap_kwargs...
 )
@@ -140,8 +140,8 @@ ax_heatmap_dim1_labels = CairoMakie.Axis(
     fgl[1, 2];
     xticks=(tick_values[13:end], tick_labels[13:end]),
     yticks=(tick_values[13:end], tick_labels[13:end]),
-    xticklabelcolor=fake_colour,
-    yticklabelcolor=fake_colour,
+    xticklabelcolor=pseudoart_colour,
+    yticklabelcolor=pseudoart_colour,
     hmap_kwargs...
 )
 CairoMakie.heatmap!(ax_heatmap_dim1_labels, empty_matrix)

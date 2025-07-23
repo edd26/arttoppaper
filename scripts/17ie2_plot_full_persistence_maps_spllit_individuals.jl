@@ -21,7 +21,7 @@ img_name = [k for k in keys(unique_cycles_count_in_windows[window_size][selected
 session_index = 1
 
 func = parameters_vec[2]
-d = ["art", "fake"][1]
+d = ["art", "pseudoart"][1]
 session_index = 1
 
 # ===-===-===-===-
@@ -29,7 +29,7 @@ single_height = 400
 single_width = 300
 subjects_colours = cgrad(
     :reds,
-    max(length(subjects_name["art"]), length(subjects_name["fake"])),
+    max(length(subjects_name["art"]), length(subjects_name["pseudoart"])),
     categorical=true,
     rev=true
 );

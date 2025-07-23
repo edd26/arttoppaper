@@ -17,7 +17,7 @@ single_height = 400
 single_width = 300
 subjects_colours = cgrad(
     :reds,
-    max(length(subjects_name["art"]), length(subjects_name["fake"])),
+    max(length(subjects_name["art"]), length(subjects_name["pseudoart"])),
     categorical=true,
     rev=true
 )

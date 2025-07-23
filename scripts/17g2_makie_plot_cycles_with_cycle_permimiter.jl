@@ -23,7 +23,7 @@ dim_index = 2
 selected_dim = 1
 total_images = 12
 
-dataset_df = [raw_fake_ET_df, raw_art_ET_df]
+dataset_df = [raw_pseudoart_ET_df, raw_art_ET_df]
 
 hdistances = OrderedDict()
 distance_coloured_cycles = OrderedDict()
@@ -38,9 +38,9 @@ data_name = dataset_names[1]
 for data_name in dataset_names
     println("Working on data: $(data_name)")
     if data_name == "art"
-        raw_img_name = "Artysta"
-    elseif data_name == "fake"
-        raw_img_name = "wystawa_fejkowa"
+        raw_img_name = "art"
+    elseif data_name == "pseudoart"
+        raw_img_name = "pseudoart"
     end
     simple_img_dir(args...) = datadir("exp_pro", "img_initial_preprocessing", "$(CONFIG.DATA_CONFIG)", raw_img_name, args...)
 

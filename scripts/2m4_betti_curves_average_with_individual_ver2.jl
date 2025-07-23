@@ -31,7 +31,7 @@ readrows(file_name) = DelimitedFiles.readdlm(file_name, ',', Float64, '\n')
 
 # ===-===-===-
 persistence_data = populate_dict!(Dict(),
-    [["fake", "Artysta"], ["BW", "WB"], ["dim0", "dim1"]],
+    [["pseudoart", "art"], ["BW", "WB"], ["dim0", "dim1"]],
     final_structure=OrderedDict()
 )
 
@@ -40,9 +40,9 @@ all_x_values = 0:255
 all_x_index = 1:256
 
 
-for dataset = ["fake", "Artysta"]
-    if dataset == "fake"
-        data_folder = "wystawa_fejkowa"
+for dataset = ["pseudoart", "art"]
+    if dataset == "pseudoart"
+        data_folder = "pseudoart"
     else
         data_folder = dataset
     end
@@ -60,11 +60,11 @@ for dataset = ["fake", "Artysta"]
         name = split(file, "_dim=")[1]
 
         extension = ""
-        if dataset == "Artysta"
-            raw_img_name = "Artysta"
+        if dataset == "art"
+            raw_img_name = "art"
             extension = ".jpg"
-        elseif dataset == "fake"
-            raw_img_name = "wystawa_fejkowa"
+        elseif dataset == "pseudoart"
+            raw_img_name = "pseudoart"
             extension = ".jpg"
         else
             ErrorException("raw img name not set") |> throw
@@ -166,15 +166,15 @@ end #datafile
 # Average betti
 
 average_bettis = populate_dict!(Dict(),
-    [["fake", "Artysta"], ["BW", "WB"], ["dim0", "dim1"]],
+    [["pseudoart", "art"], ["BW", "WB"], ["dim0", "dim1"]],
     final_structure=zeros(1, length(all_x_index))
 )
 std_bettis = populate_dict!(Dict(),
-    [["fake", "Artysta"], ["BW", "WB"], ["dim0", "dim1"]],
+    [["pseudoart", "art"], ["BW", "WB"], ["dim0", "dim1"]],
     final_structure=zeros(1, length(all_x_index))
 )
 
-img_bettis = hcat([v["resampled_bettis"] for (k, v) in persistence_data["fake"][selected_config]["dim0"]]...)
+img_bettis = hcat([v["resampled_bettis"] for (k, v) in persistence_data["pseudoart"][selected_config]["dim0"]]...)
 
 for (dataset, persistence_dataset) in persistence_data
     for (selected_config, persistence_config) in persistence_dataset
@@ -198,20 +198,20 @@ art_colours = cgrad([
         RGB([98, 197, 84] / 255...),
         RGB([91, 121, 177] / 255...),
         :purple], 12, categorical=true)[1:12]
-fake_colours = cgrad([
+pseudoart_colours = cgrad([
         RGB([150, 49, 49] / 255...),
         RGB([224, 154, 58] / 255...),
         :yellow
     ], 12, categorical=true, rev=true)[1:12]
 
 colurs_selection = OrderedDict(
-    "Artysta" => OrderedDict(
+    "art" => OrderedDict(
         "dim0" => art_colours[1],
         "dim1" => art_colours[end-3],
     ),
-    "fake" => OrderedDict(
-        "dim0" => fake_colours[end],
-        "dim1" => fake_colours[2],
+    "pseudoart" => OrderedDict(
+        "dim0" => pseudoart_colours[end],
+        "dim1" => pseudoart_colours[2],
     )
 )
 
@@ -228,7 +228,7 @@ f = CairoMakie.Figure(size=(final_width, final_height))
 fgl = GridLayout(f[1, 1])
 
 
-selected_data = "fake"
+selected_data = "pseudoart"
 
 for (d, selected_dim) = ["dim0", "dim1"] |> enumerate
     if selected_dim == "dim1"
@@ -266,8 +266,8 @@ for (d, selected_dim) = ["dim0", "dim1"] |> enumerate
         ytickformat=yticks_formatter
     )
 
-    for (i, selected_data) = ["Artysta", "fake",] |> enumerate
-        if selected_data == "Artysta"
+    for (i, selected_data) = ["art", "pseudoart",] |> enumerate
+        if selected_data == "art"
             data_label = "Art"
         else
             data_label = "Pseudo-art"
@@ -292,7 +292,7 @@ for (d, selected_dim) = ["dim0", "dim1"] |> enumerate
 
             bettis_vector = params_dict["resampled_bettis"]
 
-            if selected_data == "Artysta"
+            if selected_data == "art"
                 data_label = "Art"
             else
                 data_label = "Pseudo-art"
@@ -325,10 +325,10 @@ end # dataset
 f
 
 group_color = [
-    PolyElement(color=colurs_selection["Artysta"]["dim0"], strokecolor=:transparent)
-    PolyElement(color=colurs_selection["Artysta"]["dim1"], strokecolor=:transparent)
-    PolyElement(color=colurs_selection["fake"]["dim0"], strokecolor=:transparent)
-    PolyElement(color=colurs_selection["fake"]["dim1"], strokecolor=:transparent)
+    PolyElement(color=colurs_selection["art"]["dim0"], strokecolor=:transparent)
+    PolyElement(color=colurs_selection["art"]["dim1"], strokecolor=:transparent)
+    PolyElement(color=colurs_selection["pseudoart"]["dim0"], strokecolor=:transparent)
+    PolyElement(color=colurs_selection["pseudoart"]["dim1"], strokecolor=:transparent)
 ];
 
 group_lines = [

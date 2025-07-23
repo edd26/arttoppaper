@@ -31,7 +31,7 @@ created for RGB or BW config.
 function filter_and_refactor_files_names(files_list, data_set, data_config, pers_threshold, selected_dim)
 
     files_names = String[]
-    if data_set == "fake"
+    if data_set == "pseudoart"
         if data_config == "RGB"
             files_names = [join(split(k, "_")[1:4], "_") for k in filter_out_by_threshold(files_list, pers_threshold)]
         else

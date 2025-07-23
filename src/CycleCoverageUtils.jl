@@ -242,9 +242,9 @@ end
 function get_img_number(data_name, img_name; data_config="BW")
     img_number = 0
     pruned_name = replace(img_name, "_$(data_config)" => "", ".jpg" => "")
-    if data_name == "fake"
-        fakes_name_to_order = [v => k for (k, v) in CONFIG.fake_images_order] |> OrderedDict
-        img_number = fakes_name_to_order[pruned_name]
+    if data_name == "pseudoart"
+        pseudoarts_name_to_order = [v => k for (k, v) in CONFIG.pseudoart_images_order] |> OrderedDict
+        img_number = pseudoarts_name_to_order[pruned_name]
     else
         img_number = parse(Int, pruned_name)
     end

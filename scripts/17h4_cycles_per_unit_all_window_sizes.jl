@@ -29,13 +29,13 @@ plot_scriptprefix = "17h4"
 image_export_dir(args...) = plotsdir("section17", "$(plot_scriptprefix)-cycles_density_ecdf_multiple_widow_size", "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)", args...)
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===- 8
-# Load a sample image from art and fake
+# Load a sample image from art and pseudoart
 dim_index = 2
 total_images = 12
 
 color_palette = Makie.wong_colors()
 art_color = color_palette[3]
-fake_color = color_palette[6]
+pseudoart_color = color_palette[6]
 # ===-===-
 do_density = true
 window_sizes = [21, 51, 101, 151, 201, 401]
@@ -73,9 +73,9 @@ for (w, window_size) = window_sizes[windows_range] |> enumerate
     for data_name in dataset_names
         println("\tWorking on data: $(data_name)")
         if data_name == "art"
-            raw_img_name = "Artysta"
+            raw_img_name = "art"
         else
-            raw_img_name = "wystawa_fejkowa"
+            raw_img_name = "pseudoart"
         end
         simple_img_dir(args...) = datadir("exp_pro", "img_initial_preprocessing", "BW", raw_img_name, args...)
 
@@ -85,7 +85,7 @@ for (w, window_size) = window_sizes[windows_range] |> enumerate
         if data_name == "art"
             c = art_color
         else
-            c = fake_color
+            c = pseudoart_color
         end
 
         img1_name = all_simple_samples[1:total_images][1]
@@ -170,7 +170,7 @@ for (w, window_size) = window_sizes[windows_range] |> enumerate
 
 end
 group_color = [PolyElement(color=color, strokecolor=:transparent)
-               for color in [art_color, fake_color]]
+               for color in [art_color, pseudoart_color]]
 
 Legend(fgl[end+1, 1],
     group_color,

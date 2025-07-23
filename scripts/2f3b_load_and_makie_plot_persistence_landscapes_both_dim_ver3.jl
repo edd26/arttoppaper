@@ -33,8 +33,8 @@ persistence_data = populate_dict!(Dict(),
     final_structure=OrderedDict()
 )
 
-if CONFIG.DATA_SET == "fake"
-    data_folder = "wystawa_fejkowa"
+if CONFIG.DATA_SET == "pseudoart"
+    data_folder = "pseudoart"
 else
     data_folder = CONFIG.DATA_SET
 end
@@ -54,11 +54,11 @@ for data_config = ["BW", "WB"]
         name = split(file, "_dim=")[1]
 
         extension = ""
-        if CONFIG.DATA_SET == "Artysta"
-            raw_img_name = "Artysta"
+        if CONFIG.DATA_SET == "art"
+            raw_img_name = "art"
             extension = ".jpg"
-        elseif CONFIG.DATA_SET == "fake"
-            raw_img_name = "wystawa_fejkowa"
+        elseif CONFIG.DATA_SET == "pseudoart"
+            raw_img_name = "pseudoart"
             extension = ".jpg"
         elseif CONFIG.DATA_SET == "SimpleExamples"
             raw_img_name = "SimpleExamples"

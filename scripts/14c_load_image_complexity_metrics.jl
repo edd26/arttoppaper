@@ -19,8 +19,8 @@ PHOG_folder(args...) = data_folder("PHOG", args...)
 EdgeOrientation_folder(args...) = data_folder("EdgeOrientationEntropy", args...)
 
 # ===-
-selected_data1 = "Artysta"
-selected_data2 = "wystawa_fejkowa"
+selected_data1 = "art"
+selected_data2 = "pseudoart"
 
 # ===-===-===-===-===-===-
 data_names_vec = [selected_data1, selected_data2]
@@ -126,7 +126,7 @@ land_area_sorting = land_areas_mod_df.image |> sortperm
 land_areas_mod_df = land_areas_mod_df[land_area_sorting, :]
 
 # Clean up art section
-for subset_name = ["Artysta"]
+for subset_name = ["art"]
     art_subsection = filter(x -> x.set .== subset_name, land_areas_mod_df)
     sorted_subset = sortperm(["$(k)" for k in art_subsection.image])
     land_areas_mod_df[land_areas_mod_df.set.==subset_name, :] .= art_subsection[sorted_subset, :]

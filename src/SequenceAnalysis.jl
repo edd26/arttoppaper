@@ -29,7 +29,7 @@ function get_img_from_sequence(sequence::ImagesSequence, img_index::Int)::ImageI
     img_path = sequence.img_path
     img_dataset = split(sequence.img_path, "/")[end]
 
-    if img_dataset == "fake_networks_cleaned_2048" && length(sequence) < 10
+    if img_dataset == "pseudoart_networks_cleaned_2048" && length(sequence) < 10
         img_dataset *= "_net" * split(img_name, "_")[2]
 
     end

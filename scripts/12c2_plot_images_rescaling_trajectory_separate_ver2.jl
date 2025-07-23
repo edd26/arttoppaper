@@ -12,7 +12,7 @@ using Pipe
 
 "MakiePlots.jl" |> srcdir |> include
 
-import .CONFIG: art_images_names, names_to_order, fake_images_names
+import .CONFIG: art_images_names, names_to_order, pseudoart_images_names
 ## ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Pre-definitions
 script_prefix = "12c2"
@@ -24,15 +24,15 @@ unique_datasets = (img_trajectories_df.dataset|>unique)[1:2]
 
 # ===-===-===-
 dataset_schemes = Dict(
-    "Artysta" => :matter,
-    "wystawa_fejkowa" => :roma,
+    "art" => :matter,
+    "pseudoart" => :roma,
     "natural_textures" => :solar,
     "Rothko" => :thermal,
     "Mark" => :deep,
     "Jackson Pollock" => :rust,
-    "fake_networks_cleaned_2048" => :roma,
-    "fake_networks_cleaned_2048_net5000" => :matter,
-    "fake_networks_cleaned_2048_net5489" => :rust,
+    "pseudoart_networks_cleaned_2048" => :roma,
+    "pseudoart_networks_cleaned_2048_net5000" => :matter,
+    "pseudoart_networks_cleaned_2048_net5489" => :rust,
 )
 
 dset = unique_datasets[1]
@@ -63,7 +63,7 @@ for (k, dset) in unique_datasets |> enumerate
         dim0_areas = file_related_df[:, :pland_area_dim0]
         dim1_areas = file_related_df[:, :pland_area_dim1]
 
-        if dset == "wystawa_fejkowa"
+        if dset == "pseudoart"
             img_ordering = names_to_order[split(selected_file, ".jpg")[1]]
         else
             img_ordering = parse(Int, split(selected_file, ".jpg")[1])
@@ -96,7 +96,7 @@ for (k, dset) in unique_datasets |> enumerate
             end
         end
     end # selected_file
-    if dset == "Artysta"
+    if dset == "art"
         d_label = "Art"
     else
         d_label = "Pseudo-art"
@@ -135,28 +135,28 @@ markers_for_legend1 = [MarkerElement(marker=m, color=:black,
     strokecolor=:transparent,
     markersize=25) for (m, label) in markers_labels]
 
-art_colourscheme = cgrad(dataset_schemes["Artysta"], 12, categorical=true)
-fake_colourscheme = cgrad(dataset_schemes["wystawa_fejkowa"], 12, categorical=true)
+art_colourscheme = cgrad(dataset_schemes["art"], 12, categorical=true)
+pseudoart_colourscheme = cgrad(dataset_schemes["pseudoart"], 12, categorical=true)
 group_color1 = [PolyElement(color=color, strokecolor=:transparent)
                 for color in art_colourscheme]
 group_color2 = [PolyElement(color=color, strokecolor=:transparent)
-                for color in fake_colourscheme]
+                for color in pseudoart_colourscheme]
 
-art_files = filter(row -> row.dataset == "Artysta", img_trajectories_df).file |> unique
-fake_files = filter(row -> row.dataset == "wystawa_fejkowa", img_trajectories_df).file |> unique
+art_files = filter(row -> row.dataset == "art", img_trajectories_df).file |> unique
+pseudoart_files = filter(row -> row.dataset == "pseudoart", img_trajectories_df).file |> unique
 
 files_names1 = [split(k, ".jpg")[1] for k in art_files]
-files_names2 = [k[1:min(10, length(k))] for k in fake_files]
+files_names2 = [k[1:min(10, length(k))] for k in pseudoart_files]
 
 art_ordering = [parse(Int, just_name) for just_name in files_names1] |> sortperm
-fake_ordering = [names_to_order[just_name] for just_name in files_names2] |> sortperm
+pseudoart_ordering = [names_to_order[just_name] for just_name in files_names2] |> sortperm
 
 art_names = [art_images_names[parse(Int, just_name)] for just_name in files_names1][art_ordering]
-fake_names = [@pipe names_to_order[just_name] |> fake_images_names[_] for just_name in files_names2][fake_ordering]
+pseudoart_names = [@pipe names_to_order[just_name] |> pseudoart_images_names[_] for just_name in files_names2][pseudoart_ordering]
 
 target_len = 15
 short_names_art = String[]
-short_names_fake = String[]
+short_names_pseudoart = String[]
 for (k, n) in art_names |> enumerate
     if length(n) > target_len
         while length(n) > target_len
@@ -168,14 +168,14 @@ for (k, n) in art_names |> enumerate
     end
 end
 
-for (k, n) in fake_names |> enumerate
+for (k, n) in pseudoart_names |> enumerate
     if length(n) > target_len
         while length(n) > target_len
             n = chop(n)
         end
-        push!(short_names_fake, "$(k). " * n * "...")
+        push!(short_names_pseudoart, "$(k). " * n * "...")
     else
-        push!(short_names_fake, "$(k). " * n)
+        push!(short_names_pseudoart, "$(k). " * n)
     end
 end
 
@@ -197,7 +197,7 @@ Legend(
     fgl[end+1, :],
     # Legend(fgl2[end+1, 1],
     [group_color1, group_color2],
-    [short_names_art, short_names_fake],
+    [short_names_art, short_names_pseudoart],
     # ["Art images", "Artifically Generated images"],
     ["Art images", "Pseudo-art images"],
     tellheight=true,

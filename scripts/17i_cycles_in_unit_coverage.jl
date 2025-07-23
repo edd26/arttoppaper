@@ -28,7 +28,7 @@ plot_scriptprefix = "17i"
 image_export_dir(args...) = plotsdir("section17", "$(plot_scriptprefix)-cycles_coverage", "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)", args...)
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===- 8
-# Load a sample image from art and fake
+# Load a sample image from art and pseudoart
 PERSISTENCE_THRESHOLD = 5
 
 parameters_vec = [max_persistence, density_scaled, cycles_perimeter, persistence, density, birth, death]
@@ -84,9 +84,9 @@ for window_size = window_sizes[windows_range]
     for data_name in dataset_names
         println("Working on data: $(data_name)")
         if data_name == "art"
-            raw_img_name = "Artysta"
+            raw_img_name = "art"
         else
-            raw_img_name = "wystawa_fejkowa"
+            raw_img_name = "pseudoart"
         end
         simple_img_dir(args...) = datadir("exp_pro", "img_initial_preprocessing", "$(CONFIG.DATA_CONFIG)", raw_img_name, args...)
 

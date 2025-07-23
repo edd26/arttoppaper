@@ -18,7 +18,7 @@ do_mann_whitney = true
 do_signed_rank = false
 do_fdr_miller = false
 # ===-===-
-data_keys = ["art", "fake"]
+data_keys = ["art", "pseudoart"]
 fig_width = 400
 fig_height = 300
 color_palette = Makie.wong_colors();
@@ -92,19 +92,19 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
     end
 
     art_related_df = filter(row -> row.data_name == "art", func_related_df)
-    fake_related_df = filter(row -> row.data_name == "fake", func_related_df)
+    pseudoart_related_df = filter(row -> row.data_name == "pseudoart", func_related_df)
 
     measure_vals_art = art_related_df[:, selected_metric]
-    measure_vals_fake = fake_related_df[:, selected_metric]
+    measure_vals_pseudoart = pseudoart_related_df[:, selected_metric]
 
     vec1_val, vec2_val = colours_indidcators[func_index]
     med_art = median(measure_vals_art)
-    med_fake = median(measure_vals_fake)
+    med_pseudoart = median(measure_vals_pseudoart)
 
 
-    stat_test_result = MannWhitneyUTest(measure_vals_art, measure_vals_fake)
+    stat_test_result = MannWhitneyUTest(measure_vals_art, measure_vals_pseudoart)
     @info "Median for art is: $(med_art) "
-    @info "Median for fake is: $(med_fake) "
+    @info "Median for pseudoart is: $(med_pseudoart) "
     @info stat_test_result
 
     fgl = CairoMakie.GridLayout(f2[func_index, 1])
@@ -149,8 +149,8 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
 
     #######################33
     ###
-    measure_vals_both = [measure_vals_art, measure_vals_fake,]
-    me_values = [art_related_df[:, :ECDF_lnl_me], fake_related_df[:, :ECDF_lnl_me]]
+    measure_vals_both = [measure_vals_art, measure_vals_pseudoart,]
+    me_values = [art_related_df[:, :ECDF_lnl_me], pseudoart_related_df[:, :ECDF_lnl_me]]
     color_values = [vec1_val, vec2_val]
     # me_values = vcat(me_values...)
 
@@ -163,7 +163,7 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
     categories = vcat(categories...)
     color_indices = vcat(color_indices...)
 
-    for (i, (ax, selected_data)) in enumerate(zip([ax_scatter1, ax_scatter2], ["art", "fake"]))
+    for (i, (ax, selected_data)) in enumerate(zip([ax_scatter1, ax_scatter2], ["art", "pseudoart"]))
 
         data_related_df = filter(row -> row.data_name == selected_data, func_related_df)
 

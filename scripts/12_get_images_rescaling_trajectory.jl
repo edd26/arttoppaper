@@ -42,12 +42,12 @@ landscapes_dir(args...) = datadir("exp_pro", "section12", script_prefix * "-imag
 
 ## ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Get the images with their paths
-art_raw_path = [k for k in CONFIG.raw_paths if occursin("Artysta", k[1],)][1]
-fake_exhibition_raw_path = [k for k in CONFIG.raw_paths if occursin("wystawa", k[1])][1]
+art_raw_path = [k for k in CONFIG.raw_paths if occursin("art", k[1],)][1]
+pseudoart_exhibition_raw_path = [k for k in CONFIG.raw_paths if occursin("wystawa", k[1])][1]
 
 selected_paths = [
     art_raw_path,
-    fake_exhibition_raw_path,
+    pseudoart_exhibition_raw_path,
 ]
 
 # ===-===-
@@ -65,7 +65,7 @@ files_list_pt2 = files_list_pt1
 # ===-===-
 data_to_process = [
     ImagesSequence(raw_img_path(art_raw_path...), files_list_pt2[1])
-    ImagesSequence(raw_img_path(fake_exhibition_raw_path...), files_list_pt2[2])
+    ImagesSequence(raw_img_path(pseudoart_exhibition_raw_path...), files_list_pt2[2])
 ]
 
 ## ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-

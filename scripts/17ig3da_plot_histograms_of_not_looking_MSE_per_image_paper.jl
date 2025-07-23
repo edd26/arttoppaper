@@ -120,7 +120,7 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                 fgl1 = GridLayout(fgl_main[img_index, session_index])
 
                 ax_scatter, ax_boxplot, ax_estimate = set_up_ax_distro_plt(fgl1; scatter_label=scatter_label)
-                do_distro_plot(ax_scatter, ax_boxplot, ax_estimate, vec1, vec2, art_val=val1, fake_val=val2, skip_violin=true)
+                do_distro_plot(ax_scatter, ax_boxplot, ax_estimate, vec1, vec2, art_val=val1, pseudoart_val=val2, skip_violin=true)
                 ax_scatter.xticks = (val1:val2, ["Looking", "Not looking",])
 
                 for ax in [ax_scatter, ax_boxplot, ax_estimate]
@@ -140,9 +140,9 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                 end
 
                 if selected_data == "art"
-                    loaded_img = preproc_img_dir("$(CONFIG.DATA_CONFIG)", "Artysta", input_img_name) |> load |> channelview
+                    loaded_img = preproc_img_dir("$(CONFIG.DATA_CONFIG)", "art", input_img_name) |> load |> channelview
                 else
-                    loaded_img = preproc_img_dir("$(CONFIG.DATA_CONFIG)", "wystawa_fejkowa", input_img_name) |> load |> channelview
+                    loaded_img = preproc_img_dir("$(CONFIG.DATA_CONFIG)", "pseudoart", input_img_name) |> load |> channelview
                 end
 
                 if loaded_img |> size |> length == 3

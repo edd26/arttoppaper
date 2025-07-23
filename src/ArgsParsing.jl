@@ -11,12 +11,12 @@ function parse_plotting_commandline()
         "--data_set", "-d"
         help = "Specifies data set to use"
         arg_type = String
-        default = "Artysta"
-        # default = "fake"
+        default = "art"
+        # default = "pseudoart"
 
 
         "--data_config", "-c"
-        help = "Specifies whether to use BW or RGB version of images"
+        help = "Specifies whether to use BW or RGB version of images; possible options are BW (black to white filtration), WB (white to black filtration), RGB (lowest-value to highest value filtration for all RGB channels), RGB_rev (highest to lowest value filtration for all RGB channels)"
         arg_type = String
         default = "BW"
         # default = "WB"

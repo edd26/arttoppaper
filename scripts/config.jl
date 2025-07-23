@@ -46,13 +46,13 @@ ENV["GKSwstype"] = "100"
 
 # ===-===-
 # Datasets paths configuration
-artist_raw_path_args = ("Artysta",)
-fake_raw_path_args = ("wystawa_fejkowa",)
+artist_raw_path_args = ("art",)
+pseudoart_raw_path_args = ("pseudoart",)
 
 
 raw_paths = [
     artist_raw_path_args,
-    fake_raw_path_args,
+    pseudoart_raw_path_args,
 ]
 
 # ===-===-
@@ -71,7 +71,7 @@ VIEWING_HEIGHT = 1066
 # ===-===-===-===-===-===-
 function set_path_args(data_set, image_type)
     path_args = ("", "")
-    if data_set .== "Artysta"
+    if data_set .== "art"
         if image_type == "BW"
             path_args = ("BW", data_set)
         elseif image_type == "WB"
@@ -80,11 +80,11 @@ function set_path_args(data_set, image_type)
             ErrorException("Unknow data config. Failed to parse arguments") |> throw
         end
 
-    elseif data_set == "fake"
+    elseif data_set == "pseudoart"
         if image_type == "BW"
-            path_args = ("BW", "wystawa_fejkowa",)
+            path_args = ("BW", "pseudoart",)
         elseif image_type == "WB"
-            path_args = ("WB", "wystawa_fejkowa",)
+            path_args = ("WB", "pseudoart",)
         else
             ErrorException("Unknow data config. Failed to parse arguments") |> throw
         end
@@ -120,8 +120,8 @@ dipha_bd_info_export_folder_set(args...) = dipha_bd_info_export_folder(path_args
 homology_info_storage(args...) = datadir("exp_pro", "section17", "17e-hausdorff_computations", args...)
 # --------
 
-# Fake images order
-fake_images_order = Dict(
+# pseudoart images order
+pseudoart_images_order = Dict(
     1 => "net_5278_4",
     2 => "net_5299_2",
     3 => "net_5496_8",
@@ -137,7 +137,7 @@ fake_images_order = Dict(
     12 => "net_5225_1",
 )
 
-fake_images_names = Dict(
+pseudoart_images_names = Dict(
     1 => "Wyjście z domu",
     2 => "Krzyżowanie się światów",
     3 => "Oddech",
@@ -167,6 +167,6 @@ art_images_names = Dict(
     12 => "Oko czerni",
 )
 
-names_to_order = [v => k for (k, v) in fake_images_order] |> Dict
+names_to_order = [v => k for (k, v) in pseudoart_images_order] |> Dict
 
 end # module

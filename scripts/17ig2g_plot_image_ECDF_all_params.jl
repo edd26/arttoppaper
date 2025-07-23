@@ -4,7 +4,7 @@ using DrWatson
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 "17ig2_RMSE_ECDF_persistence_ECDF.jl" |> scriptsdir |> include
 
-import .CONFIG: art_images_names, names_to_order, fake_images_names
+import .CONFIG: art_images_names, names_to_order, pseudoart_images_names
 
 "statistics_utils.jl" |> srcdir |> include
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
@@ -20,13 +20,13 @@ func = parameters_vec[1]
 
 color_palette = Makie.wong_colors();
 art_color = color_palette[3];
-fake_color = color_palette[6];
+pseudoart_color = color_palette[6];
 
 art_colours = cgrad([
         RGB([98, 197, 84] / 255...),
         RGB([91, 121, 177] / 255...),
         :purple], 12, categorical=true)[1:12]
-fake_colours = cgrad([
+pseudoart_colours = cgrad([
         RGB([150, 49, 49] / 255...),
         RGB([224, 154, 58] / 255...),
         :yellow
@@ -51,17 +51,17 @@ end # func
 
 # ===-===-
 art_images_numbers = [split(n, "_$(CONFIG.DATA_CONFIG).jpg")[1] for n in filter(row -> row.data_name == "art", parameters_df)[:, :img_name] |> unique]
-fake_images_numbers = [split(n, "_$(CONFIG.DATA_CONFIG).jpg")[1] for n in filter(row -> row.data_name == "fake", parameters_df)[:, :img_name] |> unique]
+pseudoart_images_numbers = [split(n, "_$(CONFIG.DATA_CONFIG).jpg")[1] for n in filter(row -> row.data_name == "pseudoart", parameters_df)[:, :img_name] |> unique]
 
 art_ordering = [parse(Int, just_name) for just_name in art_images_numbers] |> sortperm
-fake_ordering = [names_to_order[just_name] for just_name in fake_images_numbers] |> sortperm
+pseudoart_ordering = [names_to_order[just_name] for just_name in pseudoart_images_numbers] |> sortperm
 
 art_names = [art_images_names[parse(Int, just_name)] for just_name in art_images_numbers][art_ordering]
-fake_names = [@pipe names_to_order[just_name] |> fake_images_names[_] for just_name in fake_images_numbers][fake_ordering]
+pseudoart_names = [@pipe names_to_order[just_name] |> pseudoart_images_names[_] for just_name in pseudoart_images_numbers][pseudoart_ordering]
 
 target_len = 15
 short_names_art = String[]
-short_names_fake = String[]
+short_names_pseudoart = String[]
 for (k, n) in art_names |> enumerate
     if length(n) > target_len
         while length(n) > target_len
@@ -72,14 +72,14 @@ for (k, n) in art_names |> enumerate
         push!(short_names_art, "$(k). " * n)
     end
 end
-for (k, n) in fake_names |> enumerate
+for (k, n) in pseudoart_names |> enumerate
     if length(n) > target_len
         while length(n) > target_len
             n = chop(n)
         end
-        push!(short_names_fake, "$(k). " * n * "...")
+        push!(short_names_pseudoart, "$(k). " * n * "...")
     else
-        push!(short_names_fake, "$(k). " * n)
+        push!(short_names_pseudoart, "$(k). " * n)
     end
 end
 
@@ -148,7 +148,7 @@ for func = parameters_vec[func_range]
         ylabel=y_label,
         title="Art"
     )
-    ax_ecdf_fake = CairoMakie.Axis(
+    ax_ecdf_pseudoart = CairoMakie.Axis(
         fgl2[1, 2],
         xlabel=x_label,
         ylabel=y_label,
@@ -160,7 +160,7 @@ for func = parameters_vec[func_range]
         ylabel=y_label,
         title="Art"
     )
-    ax_ecdf_fake2 = CairoMakie.Axis(
+    ax_ecdf_pseudoart2 = CairoMakie.Axis(
         fgl3[1, 2],
         xlabel=x_label,
         ylabel=y_label,
@@ -172,7 +172,7 @@ for func = parameters_vec[func_range]
         ylabel=y_label,
         title="",
     )
-    for ax in [ax_ecdf_art, ax_ecdf_fake, ax_ecdf_art2, ax_ecdf_fake2]
+    for ax in [ax_ecdf_art, ax_ecdf_pseudoart, ax_ecdf_art2, ax_ecdf_pseudoart2]
         CairoMakie.xlims!(ax, x_lims["$(func)"]...)
     end
 
@@ -187,11 +187,11 @@ for func = parameters_vec[func_range]
             selected_colour = art_colours
             ordering = art_ordering
         else
-            c = fake_color
-            ax = ax_ecdf_fake
-            ax2 = ax_ecdf_fake2
-            selected_colour = fake_colours
-            ordering = fake_ordering
+            c = pseudoart_color
+            ax = ax_ecdf_pseudoart
+            ax2 = ax_ecdf_pseudoart2
+            selected_colour = pseudoart_colours
+            ordering = pseudoart_ordering
         end
 
         img_list = data_parameters_df.img_name |> unique
@@ -227,7 +227,7 @@ for func = parameters_vec[func_range]
 
     colours = [:red, :blue]
     group_color = [PolyElement(color=color, strokecolor=:transparent)
-                   for color in [art_color, fake_color]]
+                   for color in [art_color, pseudoart_color]]
 
     Legend(fgl[2, 1],
         group_color,
@@ -252,14 +252,14 @@ for func = parameters_vec[func_range]
         PolyElement(color=c,
             strokecolor=:black
         )
-        for c in fake_colours
+        for c in pseudoart_colours
     ]
 
     # ---==---==---==
 
     Legend(fgl3[2, :],
         [markers_for_legend1, markers_for_legend2],
-        [short_names_art, short_names_fake,],
+        [short_names_art, short_names_pseudoart,],
         ["Art", "Pseudo-art",],
         tellheight=true,
         # tellwidth=true,
@@ -268,7 +268,7 @@ for func = parameters_vec[func_range]
     )
     Legend(fgl4[2, :],
         [markers_for_legend1, markers_for_legend2],
-        [short_names_art, short_names_fake,],
+        [short_names_art, short_names_pseudoart,],
         ["Art", "Pseudo-art",],
         tellheight=true,
         nbanks=4,
@@ -279,7 +279,7 @@ for func = parameters_vec[func_range]
 
     if func == cycles_perimeter
         ax_ecdf_art2.xtickformat = "{:0.0e}"
-        ax_ecdf_fake2.xtickformat = "{:0.0e}"
+        ax_ecdf_pseudoart2.xtickformat = "{:0.0e}"
     end
 
     f

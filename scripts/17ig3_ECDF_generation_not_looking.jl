@@ -254,11 +254,11 @@ ECDF_not_looking_error_df = DataFrame(
 
 
 
-# mse_img = populate_dict!(Dict(), [["art", "fake"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
-# mean_error_img = populate_dict!(Dict(), [["art", "fake"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
+# mse_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
+# mean_error_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
 
 func = parameters_vec[2]
-d = ["art", "fake"][1]
+d = ["art", "pseudoart"][1]
 session_index = 1
 for func = parameters_vec[func_range]
     @info "Working on: $(func)"
@@ -274,7 +274,7 @@ for func = parameters_vec[func_range]
         ecdf_range = 0:0.1:256
     end
 
-    for d in ["art", "fake"]
+    for d in ["art", "pseudoart"]
         @info "\tWorking on: $(d)"
         data_related_df = filter(row -> row.data_name == d, func_related_df)
         images = data_related_df.img_name |> unique

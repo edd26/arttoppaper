@@ -20,7 +20,7 @@ fig_height = 300
 
 color_palette = Makie.wong_colors();
 
-data_keys = ["art", "fake"]
+data_keys = ["art", "pseudoart"]
 func = parameters_vec[1]
 
 # Test selection
@@ -75,13 +75,13 @@ for looking_type = [:looking, :not_looking]
             end
 
             art_related_df = filter(row -> row.data_name == "art", func_related_df)
-            fake_related_df = filter(row -> row.data_name == "fake", func_related_df)
+            pseudoart_related_df = filter(row -> row.data_name == "pseudoart", func_related_df)
 
             art_label = "Artist"
-            fake_label = "Artificially Generated"
+            pseudoart_label = "Artificially Generated"
 
             vec1 = [k for k in art_related_df[:, selected_metric] if !isnan(k)]
-            vec2 = [k for k in fake_related_df[:, selected_metric] if !isnan(k)]
+            vec2 = [k for k in pseudoart_related_df[:, selected_metric] if !isnan(k)]
 
             if isempty(vec1)
                 vec1 = [0]
@@ -117,7 +117,7 @@ for looking_type = [:looking, :not_looking]
                 vec1,
                 vec2;
                 art_val=vec1_val,
-                fake_val=vec2_val,
+                pseudoart_val=vec2_val,
                 color_palette=color_palette
             )
             ax_scatter.xticks = (vec1_val:vec2_val, ["Art", "Artificially\nGenerated",])
@@ -175,7 +175,7 @@ for looking_type = [:looking, :not_looking]
         data_stuff = savename(@dict window_size)
         data_stuff = replace(data_stuff, ".jpg" => "")
 
-        section_name = "art_vs_fake_all_metrics_all_subjects"
+        section_name = "art_vs_pseudoart_all_metrics_all_subjects"
         out_name = "$(scriptprefix)_$(section_name)_$(data_stuff)_$(selected_metric)"
         image_export_dir(args...) = plotsdir(
             "section17",
