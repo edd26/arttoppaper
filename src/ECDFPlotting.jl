@@ -1,21 +1,18 @@
 using CairoMakie
 
-function set_up_ax_distro_plt(fgl; scatter_label="")
-    ax_scatter = CairoMakie.Axis(
-        fgl[1, 1],
-        ylabel=scatter_label,
-        xtrimspine=true
-    )# yscale=log10
+function set_up_ax_distro_plt(fgl; scatter_label = "")
+    ax_scatter = CairoMakie.Axis(fgl[1, 1], ylabel = scatter_label, xtrimspine = true)# yscale=log10
     ax_boxplot = CairoMakie.Axis(fgl[1, 2])#, yscale=log10,)
     ax_estimate = CairoMakie.Axis(fgl[1, 3])#, yscale=log10,)
 
-    hidedecorations!(ax_scatter,
-        label=false,
-        ticklabels=false,
-        ticks=false,
-        grid=true,
-        minorgrid=true,
-        minorticks=true
+    hidedecorations!(
+        ax_scatter,
+        label = false,
+        ticklabels = false,
+        ticks = false,
+        grid = true,
+        minorgrid = true,
+        minorticks = true,
     )
     ax_scatter.rightspinevisible = false
     ax_scatter.topspinevisible = false
@@ -28,38 +25,35 @@ function set_up_ax_distro_plt(fgl; scatter_label="")
     return ax_scatter, ax_boxplot, ax_estimate
 end
 
-function set_up_ax_distro_plt2(fgl; scatter_label="")
+function set_up_ax_distro_plt2(fgl; scatter_label = "")
     ax_scatter = CairoMakie.Axis(
         fgl[1, 1],
-        ylabel=scatter_label,
-        xlabel=L"ME(ECDF_{looking}-ECDF_{not\;looking})",
+        ylabel = scatter_label,
+        xlabel = L"ME(ECDF_{looking}-ECDF_{not\;looking})",
         # xtrimspine=true
     )# yscale=log10
-    ax_boxplot = CairoMakie.Axis(
-        fgl[1, 2],
-        xtrimspine=true
-    )#, yscale=log10,)
-    ax_estimate = CairoMakie.Axis(
-        fgl[1, 3]
-    )#, yscale=log10,)
+    ax_boxplot = CairoMakie.Axis(fgl[1, 2], xtrimspine = true)#, yscale=log10,)
+    ax_estimate = CairoMakie.Axis(fgl[1, 3])#, yscale=log10,)
 
-    hidedecorations!(ax_scatter,
-        label=false,
-        ticklabels=false,
-        ticks=false,
-        grid=true,
-        minorgrid=true,
-        minorticks=true
+    hidedecorations!(
+        ax_scatter,
+        label = false,
+        ticklabels = false,
+        ticks = false,
+        grid = true,
+        minorgrid = true,
+        minorticks = true,
     )
-    hidexdecorations!(ax_boxplot,
-        label=false,
-        ticklabels=false,
-        ticks=false,
-        grid=true,
-        minorgrid=true,
-        minorticks=true
+    hidexdecorations!(
+        ax_boxplot,
+        label = false,
+        ticklabels = false,
+        ticks = false,
+        grid = true,
+        minorgrid = true,
+        minorticks = true,
     )
-    hideydecorations!(ax_boxplot,)
+    hideydecorations!(ax_boxplot)
     ax_scatter.rightspinevisible = false
     ax_scatter.topspinevisible = false
     ax_boxplot.leftspinevisible = false
@@ -74,11 +68,38 @@ function set_up_ax_distro_plt2(fgl; scatter_label="")
     return ax_scatter, ax_boxplot, ax_estimate
 end
 
-function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estimate::Makie.Axis, art_vals::Vector{Float64}, pseudoart_vals::Vector{Float64}; art_val=3, pseudoart_val=6, color_palette=Makie.wong_colors(), skip_violin=false)
-    return do_distro_plot(ax_scatter, ax_boxplot, ax_estimate, [art_vals, pseudoart_vals]; category_values=[art_val, pseudoart_val], color_palette=color_palette, skip_violin=skip_violin)
+function do_distro_plot(
+    ax_scatter::Makie.Axis,
+    ax_boxplot::Makie.Axis,
+    ax_estimate::Makie.Axis,
+    art_vals::Vector{Float64},
+    pseudoart_vals::Vector{Float64};
+    art_val = 3,
+    pseudoart_val = 6,
+    color_palette = Makie.wong_colors(),
+    skip_violin = false,
+)
+    return do_distro_plot(
+        ax_scatter,
+        ax_boxplot,
+        ax_estimate,
+        [art_vals, pseudoart_vals];
+        category_values = [art_val, pseudoart_val],
+        color_palette = color_palette,
+        skip_violin = skip_violin,
+    )
 end
 
-function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estimate::Makie.Axis, all_values, me_values; category_values=[3, 6], color_palette=Makie.wong_colors(), skip_violin=false)
+function do_distro_plot(
+    ax_scatter::Makie.Axis,
+    ax_boxplot::Makie.Axis,
+    ax_estimate::Makie.Axis,
+    all_values,
+    me_values;
+    category_values = [3, 6],
+    color_palette = Makie.wong_colors(),
+    skip_violin = false,
+)
     values = vcat(all_values...)
     # me_values = vcat(me_values...)
 
@@ -92,39 +113,35 @@ function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estim
         ax_scatter,
         me_values[1],
         all_values[1],
-        markersize=8,
-        marker=:xcross,
-        color=(color_palette[category_values[1]], 0.4)
+        markersize = 8,
+        marker = :xcross,
+        color = (color_palette[category_values[1]], 0.4),
         # alpha = 0.5
     )
     CairoMakie.scatter!(
         ax_scatter,
         me_values[2],
         all_values[2],
-        markersize=8,
-        marker=:cross,
-        color=(color_palette[category_values[2]], 0.4)
+        markersize = 8,
+        marker = :cross,
+        color = (color_palette[category_values[2]], 0.4),
         # alpha = 0.5
     )
 
-    CairoMakie.boxplot!(ax_boxplot,
+    CairoMakie.boxplot!(
+        ax_boxplot,
         categories,
         values,
-        whiskerwidth=0.5,
-        strokecolor=:black,
-        strokewidth=1,
+        whiskerwidth = 0.5,
+        strokecolor = :black,
+        strokewidth = 1,
         # color=categories
-        color=color_palette[categories]
+        color = color_palette[categories],
     )
 
     if !skip_violin
         # pseudoart_x_vals = [1 for k in pseudoart_vals]
-        violin_kwargs = (
-            side=:right,
-            strokecolor=:black,
-            strokewidth=1,
-            alpha=0.7
-        )
+        violin_kwargs = (side = :right, strokecolor = :black, strokewidth = 1, alpha = 0.7)
         violin_alpha = 0.5
         for (k, values_vec) in enumerate(all_values)
             if length(all_values) > 2
@@ -134,7 +151,13 @@ function do_distro_plot(ax_scatter::Makie.Axis, ax_boxplot::Makie.Axis, ax_estim
             end
             category_colour = [color_palette[category_values[k]] for m in values_vec]
             if length(values_vec) > 0
-                CairoMakie.violin!(ax_estimate, category_x_vals, values_vec; color=(category_colour[k], violin_alpha), violin_kwargs...)
+                CairoMakie.violin!(
+                    ax_estimate,
+                    category_x_vals,
+                    values_vec;
+                    color = (category_colour[k], violin_alpha),
+                    violin_kwargs...,
+                )
             end
         end
     end
@@ -144,9 +167,10 @@ function do_distro_plot(
     ax_scatter::Makie.Axis,
     ax_boxplot::Makie.Axis,
     ax_estimate::Makie.Axis,
-    all_values; category_values=[3, 6],
-    color_palette=Makie.wong_colors(),
-    skip_violin=false
+    all_values;
+    category_values = [3, 6],
+    color_palette = Makie.wong_colors(),
+    skip_violin = false,
 )
 
     values = vcat(all_values...)
@@ -161,32 +185,33 @@ function do_distro_plot(
         ax_scatter,
         categories,
         values,
-        clouds=nothing,
-        plot_boxplots=false,
-        cloud_width=0.0,
-        markersize=8,
-        jitter_width=0.3,
-        side_nudge=0.0,
+        clouds = nothing,
+        plot_boxplots = false,
+        cloud_width = 0.0,
+        markersize = 8,
+        jitter_width = 0.3,
+        side_nudge = 0.0,
         # color=[art_color, pseudoart_color]
-        color=color_palette[categories]
+        color = color_palette[categories],
     )
-    CairoMakie.boxplot!(ax_boxplot,
+    CairoMakie.boxplot!(
+        ax_boxplot,
         categories,
         values,
-        whiskerwidth=0.5,
-        strokecolor=:black,
-        strokewidth=1,
+        whiskerwidth = 0.5,
+        strokecolor = :black,
+        strokewidth = 1,
         # color=categories
-        color=color_palette[categories]
+        color = color_palette[categories],
     )
 
     # pseudoart_x_vals = [1 for k in pseudoart_vals]
     if !skip_violin
         violin_kwargs = (
-            side=:right,
-            strokecolor=:black,
-            strokewidth=1,
-            alpha=0.7
+            side = :right,
+            strokecolor = :black,
+            strokewidth = 1,
+            # alpha=0.7
         )
         violin_alpha = 0.5
         for (k, values_vec) in enumerate(all_values)
@@ -197,7 +222,13 @@ function do_distro_plot(
             end
             category_colour = [color_palette[category_values[k]] for m in values_vec]
             if length(values_vec) > 0
-                CairoMakie.violin!(ax_estimate, category_x_vals, values_vec; color=(category_colour[k], violin_alpha), violin_kwargs...)
+                CairoMakie.violin!(
+                    ax_estimate,
+                    category_x_vals,
+                    values_vec;
+                    color = (category_colour[k], violin_alpha),
+                    violin_kwargs...,
+                )
             end
         end
     end # if skip
@@ -209,7 +240,7 @@ function get_looked_values(mean_heatmap_in_window, subject_looking, parameters_v
 
     subject_looking_values = Float64[]
     for (weight, value) in zip(hist_weights, parameters_values[subject_looking])
-        for k in 1:ceil(weight)
+        for k = 1:ceil(weight)
             push!(subject_looking_values, value)
         end
     end

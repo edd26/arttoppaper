@@ -1,5 +1,6 @@
+
 using DrWatson
-@quickactivate "ArtTopology"
+@quickactivate "arttopopaper"
 
 # ===-===-===-
 using DataStructures: OrderedDict
@@ -7,46 +8,46 @@ using DelimitedFiles
 using DataFrames
 using Images
 using PersistenceLandscapes
-using StatsPlots
-using TopologyPreprocessing
-import Base.Threads: @spawn, @sync
+using Pipe
+using Ripserer
 
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
 
 # ===-===-
-import .CONFIG: dipha_bd_info_export_folder,
-    export_for_dipha_folder_set,
+import .CONFIG:
     preproc_img_dir_set,
     SELECTED_DIM,
     PERSISTENCE_THRESHOLD,
     DATA_CONFIG,
     DATA_SET,
-    dipha_bd_info_export_folder_set,
-    total_trials
+    total_trials,
+    ripserer_computations_dir
 
 @info "Arguments processed."
 # ===-===-===-
 script_prefix = "2g"
 readrows(file_name) = DelimitedFiles.readdlm(file_name, ',', Float64, '\n')
-landscapes_dir(args...) = datadir("exp_pro", "section2", script_prefix, "landscapes_df", args...)
+landscapes_dir(args...) =
+    datadir("exp_pro", "section2", script_prefix, "landscapes_df", args...)
 
 ## ===-===-===-===-===-===-===-===-===-===-
 set1 = ["art", "pseudoart"]
 data_sets = set1
 
-useddata = join(data_sets, "-")
 # ===-
 setup = DATA_CONFIG
+last_of_filtration = 255
+extension = ".jpg"
 
 land_areas = DataFrame(
-    dataset=String[],
-    landscape=Any[],
-    pland_area=Float64[],
-    dim=Int[],
-    threshold=Float64[],
-    file=String[],
+    dataset = String[],
+    landscape = Any[],
+    pland_area = Float64[],
+    dim = Int[],
+    threshold = Float64[],
+    file = String[],
 )
 
 for data in data_sets
@@ -59,51 +60,101 @@ for data in data_sets
     landscapes_df, p = produce_or_load(
         landscapes_dir(),
         config,
-        prefix="landscape_df",
-        force=do_force
+        prefix = "landscape_df",
+        force = false,
     ) do config
+        @unpack data, setup, thr, = config
 
         # for file in filtered_list
         land_area = DataFrame(
-            dataset=String[],
-            landscape=Any[],
-            pland_area=Float64[],
-            dim=Int[],
-            threshold=Float64[],
-            file=String[],
+            dataset = String[],
+            landscape = Any[],
+            pland_area = Float64[],
+            dim = Int[],
+            threshold = Float64[],
+            file = String[],
         )
 
-        # noise data couldn't have been processed because there are too many topological features
-        for local_dim in [0, 1], persistence_threshold = [PERSISTENCE_THRESHOLD,]
-            @info "dataset : " data
+        simple_img_dir(args...) =
+            datadir("exp_pro", "img_initial_preprocessing", "$(setup)", data, args...)
 
-            files_folder(args...) = dipha_bd_info_export_folder(setup, data, "dim=$(local_dim)", args...)
+        files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
+        files_list = filter(x -> occursin("$(CONFIG.DATA_CONFIG)", x), files_list)
+        files_names = @pipe files_list |> [k[1] for k in split.(_, ".")]
 
-            files_list = files_folder() |> readdir |> filter_out_hidden |> sort
-            filtered_list = filter_out_by_threshold(files_list, persistence_threshold)
+        file = files_names[1]
+        for file in files_names
+            @info "\tComputing landscapes info for file: " file
 
-            for file in filtered_list
-                @info "\tComputing landscapes info for file: " file
+            img1 = file * extension |> simple_img_dir |> load
+            @warn "Resizing set to 0.1, to speed up computations"
+            img1 = imresize(img1, ratio = 0.1)
+            scaled_img = floor.(Int, Gray.(img1) .* last_of_filtration)
+            scaled_img_WB = abs.(scaled_img .- last_of_filtration)
 
-                data_matrix = zeros(1, 3)
-                try
-                    data_matrix = files_folder(file) |> readrows
-                catch
-                    @warn "Failed to read csv file " file
-                end
-                births = data_matrix[:, 2]
-                deaths = data_matrix[:, 3]
+            selected_dim = 0
+            input_img = scaled_img
 
-                landscape = [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes |> PersistenceLandscape
+            data_dir = if data == "pseudoart"
+                "pseudoart"
+            else
+                data
+            end
+            # >>>>
+            alg = :homology
+            reps = true
+            cutoff = PERSISTENCE_THRESHOLD
+            homology_config = @dict alg reps cutoff input_img
 
-                push!(land_area,
-                    (dataset=data,
-                        landscape=landscape,
-                        pland_area=landscape |> computeIntegralOfLandscape,
-                        dim=local_dim,
-                        threshold=persistence_threshold,
-                        file=split(file, "_dim=")[1],
-                    ))
+            homology_data, p = produce_or_load(
+                ripserer_computations_dir(data_dir, "image_$(replace(file, ".jpg"=>""))"), # path
+                homology_config, # config
+                prefix = "homology_info", # file prefix
+                # force=true # force computations
+            ) do homology_config
+                # do things
+                @unpack alg, reps, cutoff, input_img = homology_config
+                println("\tStarting homology computations...")
+                homolgy_result = ripserer(
+                    Cubical(input_img),
+                    cutoff = cutoff,
+                    reps = reps,
+                    alg = alg,
+                )
+                println("\tFinished homology computations. ")
+                Dict("homolgy_result" => homolgy_result)
+            end # produce_or_load
+
+            homology_info = homology_data["homolgy_result"]
+
+            # <<<<
+            dim_index = 1
+            local_dim = 0
+            for (dim_index, local_dim) in enumerate([0, 1])# , persistence_threshold = [PERSISTENCE_THRESHOLD,]
+                @info "Dimension: " local_dim
+
+                homology_info[dim_index]
+
+
+                births = [p[1] for p in homology_info[dim_index]]
+                deaths = [p[2] for p in homology_info[dim_index]]
+
+                landscape =
+                    [MyPair(b, d) for (b, d) in zip(births, deaths)] |>
+                    PersistenceBarcodes |>
+                    PersistenceLandscape
+
+                push!(
+                    land_area,
+                    (
+                        dataset = data,
+                        landscape = landscape,
+                        pland_area = landscape |> computeIntegralOfLandscape,
+                        dim = local_dim,
+                        threshold = PERSISTENCE_THRESHOLD,
+                        file = split(file, "_dim=")[1],
+                    ),
+                )
             end # dataset
         end
         Dict("landscapes_df" => land_area)
@@ -111,6 +162,7 @@ for data in data_sets
 
     @info "Appending...\n"
     global land_areas = vcat(land_areas, landscapes_df["landscapes_df"])
+    @info "Finished appending"
 end
 
 ## ===-===-

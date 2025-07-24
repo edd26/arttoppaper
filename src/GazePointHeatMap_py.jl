@@ -74,7 +74,7 @@ def get_heatmap(gazepoints, dispsize, gaussianwh=200, gaussiansd=None):
     heatmap = heatmap[strt : dispsize[1] + strt, strt : dispsize[0] + strt]
     # remove zeros
     lowbound = numpy.mean(heatmap[heatmap > 0])
-    heatmap[heatmap < lowbound] = numpy.nan
+    heatmap[heatmap < lowbound] = numpy.NaN
 
     return heatmap
 """

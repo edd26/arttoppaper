@@ -1,5 +1,6 @@
+
 using DrWatson
-@quickactivate "ArtTopology"
+@quickactivate "arttopopaper"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 
@@ -11,7 +12,13 @@ using StatsBase: ecdf
 scriptprefix = "17ig3"
 
 # ===-===-===-===-
-df_info_storage(args...) = datadir("exp_pro", "section17", "$(scriptprefix)-ecdf_not_looking", "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)", args...)
+df_info_storage(args...) = datadir(
+    "exp_pro",
+    "section17",
+    "$(scriptprefix)-ecdf_not_looking",
+    "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)",
+    args...,
+)
 
 # ===-===-===-===-
 selected_window = 51
@@ -53,7 +60,7 @@ ECDF_not_looking_df = DataFrame(
     :mean_heatmap_in_window => [],
 )
 
-for func = parameters_vec[func_range]
+for func in parameters_vec[func_range]
     @info "Working on: $(func)"
 
     for window_size in window_sizes[windows_range]
@@ -63,7 +70,9 @@ for func = parameters_vec[func_range]
             @info "\t\tWorking on: $(selected_data)"
 
             et_df = dataset_df_dict[selected_data]
-            for img_name = [k for k in keys(unique_cycles_count_in_windows[window_size][selected_data])]
+            for img_name in [
+                k for k in keys(unique_cycles_count_in_windows[window_size][selected_data])
+            ]
                 @info "\t\t\tWorking on: $(img_name)"
 
                 img_cycles = cycles_on_image_canvas[window_size][selected_data][img_name]
@@ -74,7 +83,7 @@ for func = parameters_vec[func_range]
                     window_size,
                     homology_info[selected_data][img_name],
                     perimeter_info[selected_data][img_name];
-                    default_map_value=default_map_value
+                    default_map_value = default_map_value,
                 )
                 if typeof(parameters_values) != Vector{Float64}
                     parameters_values = Vector{Float64}(parameters_values)
@@ -82,13 +91,14 @@ for func = parameters_vec[func_range]
 
                 push!(
                     parameters_df,
-                    (selected_data,
+                    (
+                        selected_data,
                         img_name,
                         "$(func)",
                         window_size,
                         parameters_values,
                         parameter_map,
-                    )
+                    ),
                 )
                 ecdf_img = ecdf(parameters_values)
 
@@ -96,21 +106,33 @@ for func = parameters_vec[func_range]
                 view_indicator = ""
                 # for session_index = [1, 2], view_indicator = ["", "s2"]
                 # @info "\t\t\t\tWorking on session $(session_index) and view $(view_indicator)"
-                for session_index = 1:total_sessions, (view_index, view_indicator) = enumerate(view_range)
+                for session_index = 1:total_sessions,
+                    (view_index, view_indicator) in enumerate(view_range)
+
                     @info "\t\t\t\tWorking on session $(session_index) "
 
                     parameter = "$(func)"
-                    ecdf_generation_config = @dict window_sizes unique_cycles_count_in_windows total_subjects window_size func selected_data et_df img_name session_index parameter
+                    ecdf_generation_config =
+                        @dict window_sizes unique_cycles_count_in_windows total_subjects window_size func selected_data et_df img_name session_index parameter
                     if !isnan(default_map_value)
                         ecdf_generation_config[:default_map_value] = default_map_value
                     end
                     ECDF_not_looking_data, p = produce_or_load(
                         df_info_storage("$(func)"), # path
                         ecdf_generation_config, # config
-                        prefix="p_value_df", # file prefix
-                        force=force_computaions # force computations
+                        prefix = "p_value_df", # file prefix
+                        force = force_computaions, # force computations
                     ) do ecdf_generation_config
-                        @unpack window_sizes, unique_cycles_count_in_windows, total_subjects, window_size, func, selected_data, et_df, img_name, session_index, parameter = ecdf_generation_config
+                        @unpack window_sizes,
+                        unique_cycles_count_in_windows,
+                        total_subjects,
+                        window_size,
+                        func,
+                        selected_data,
+                        et_df,
+                        img_name,
+                        session_index,
+                        parameter = ecdf_generation_config
 
                         session_df = filter(row -> row.Session == session_index, et_df)
 
@@ -132,15 +154,30 @@ for func = parameters_vec[func_range]
                         )
 
                         subject = subjects_name[selected_data][end-1]
-                        img_number = get_img_number(selected_data, img_name; data_config=CONFIG.DATA_CONFIG)
-                        for (k, subject) = subjects_name[selected_data] |> enumerate
+                        img_number = get_img_number(
+                            selected_data,
+                            img_name;
+                            data_config = CONFIG.DATA_CONFIG,
+                        )
+                        for (k, subject) in
+                            subjects_name[selected_data][subject_range] |> enumerate
 
                             subject_df = filter(row -> row.Subject == subject, session_df)
                             view_and_img_df = DataFrame()
                             if view_indicator == :both
-                                view_and_img_df = filter(row -> row.Stimulus == "$(img_number)s2.jpg" || row.Stimulus == "$(img_number).jpg", subject_df)
+                                view_and_img_df = filter(
+                                    row ->
+                                        row.Stimulus == "$(img_number)s2.jpg" ||
+                                        row.Stimulus == "$(img_number).jpg",
+                                    subject_df,
+                                )
                             else
-                                view_and_img_df = filter(row -> row.Stimulus == "$(img_number)$(view_indicator).jpg", subject_df)
+                                view_and_img_df = filter(
+                                    row ->
+                                        row.Stimulus ==
+                                        "$(img_number)$(view_indicator).jpg",
+                                    subject_df,
+                                )
                             end
                             if isempty(view_and_img_df.Stimulus)
                                 @info "\t\t\t\t\tEmpty for subject $(subject)"
@@ -157,21 +194,30 @@ for func = parameters_vec[func_range]
                                         STARTING_POINT,
                                         VIEWING_WIDTH,
                                         IMG_HEIGHT,
-                                        IMG_WIDTH
+                                        IMG_WIDTH,
                                     )
-                                windowed_heatmap_values = [v for (k, v) in mean_heatmap_in_window]
+                                windowed_heatmap_values =
+                                    [v for (k, v) in mean_heatmap_in_window]
                                 hist_weights = windowed_heatmap_values[subject_looking]
 
                                 subject_looking_values = Float64[]
-                                for (weight, value) in zip(hist_weights, parameters_values[subject_looking])
-                                    for k in 1:ceil(weight)
+                                for (weight, value) in zip(
+                                    hist_weights,
+                                    parameters_values[subject_looking],
+                                )
+                                    for k = 1:ceil(weight)
                                         push!(subject_looking_values, value)
                                     end
                                 end
-                                looked_values = Vector{Float64}(parameters_values[subject_looking])
+                                looked_values =
+                                    Vector{Float64}(parameters_values[subject_looking])
                                 # ===-===-
-                                empty_positions = [p for (p, v) in mean_heatmap_in_window if v == 0]
-                                not_looked_values = filter(x -> !isnan(x), [parameter_map[k[1], k[2]] for k in empty_positions])
+                                empty_positions =
+                                    [p for (p, v) in mean_heatmap_in_window if v == 0]
+                                not_looked_values = filter(
+                                    x -> !isnan(x),
+                                    [parameter_map[k[1], k[2]] for k in empty_positions],
+                                )
 
                                 # f = Figure();
                                 # ax = CairoMakie.Axis(f[1,1]);
@@ -184,11 +230,19 @@ for func = parameters_vec[func_range]
                                 # [parameter_map[k[1], k[2]] for k in nonempty_positions]
 
                                 # ===-
-                                ecdf_viewing = ecdf(looked_values; weights=hist_weights)
+                                ecdf_viewing =
+                                    ecdf(looked_values; weights = hist_weights)
                                 ecdf_not_viewing = ecdf(not_looked_values)
                                 # ===-
-                                KS_test_results_looking = ApproximateTwoSampleKSTest(parameters_values, subject_looking_values)
-                                KS_test_results_not_looking = ApproximateTwoSampleKSTest(parameters_values, not_looked_values)
+                                KS_test_results_looking = ApproximateTwoSampleKSTest(
+                                    parameters_values,
+                                    subject_looking_values,
+                                )
+                                KS_test_results_not_looking =
+                                    ApproximateTwoSampleKSTest(
+                                        parameters_values,
+                                        not_looked_values,
+                                    )
                                 if view_indicator == ""
                                     view_index = 1
                                 elseif view_indicator == "s2"
@@ -197,7 +251,8 @@ for func = parameters_vec[func_range]
                                     view_index = :both
                                 end
 
-                                push!(ECDF_not_looking_local_df,
+                                push!(
+                                    ECDF_not_looking_local_df,
                                     (
                                         selected_data,
                                         subject,
@@ -212,15 +267,17 @@ for func = parameters_vec[func_range]
                                         ecdf_viewing,
                                         ecdf_not_viewing,
                                         subject_looking,
-                                        mean_heatmap_in_window
-                                    )
+                                        mean_heatmap_in_window,
+                                    ),
                                 )
                             end # if
                         end # subject
                         Dict("ECDF_not_looking_results" => ECDF_not_looking_local_df)
                     end # produce_or_load
-                    ECDF_not_looking_local_df = ECDF_not_looking_data["ECDF_not_looking_results"]
-                    global ECDF_not_looking_df = vcat(ECDF_not_looking_df, ECDF_not_looking_local_df)
+                    ECDF_not_looking_local_df =
+                        ECDF_not_looking_data["ECDF_not_looking_results"]
+                    global ECDF_not_looking_df =
+                        vcat(ECDF_not_looking_df, ECDF_not_looking_local_df)
                 end # session, view index
             end # img_nam
         end # selected_data
@@ -249,18 +306,10 @@ ECDF_not_looking_error_df = DataFrame(
     :ECDF_lnl_me => Float64[],
     :ECDF_lnl_mse => Float64[],
     :ECDF_lnl_manual_KS => Float64[],
-    :ECDF_lnl_KS_statistic => Float64[]
+    :ECDF_lnl_KS_statistic => Float64[],
 )
 
-
-
-# mse_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
-# mean_error_img = populate_dict!(Dict(), [["art", "pseudoart"], [1, 2], ["$(f)" for f in parameters_vec[func_range]]]; final_structure=Dict())
-
-func = parameters_vec[2]
-d = ["art", "pseudoart"][1]
-session_index = 1
-for func = parameters_vec[func_range]
+for func in parameters_vec[func_range]
     @info "Working on: $(func)"
     func_related_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_df)
 
@@ -279,7 +328,9 @@ for func = parameters_vec[func_range]
         data_related_df = filter(row -> row.data_name == d, func_related_df)
         images = data_related_df.img_name |> unique
 
-        for session_index = 1:total_sessions, (view_index, view_indicator) in enumerate(view_range)
+        for session_index = 1:total_sessions,
+            (view_index, view_indicator) in enumerate(view_range)
+
             @info "\t\tWorking one session: $(session_index), view: $(view_indicator)"
             view_df = filter(row -> row.view == view_indicator, data_related_df)
             session_df = filter(row -> row.session == session_index, view_df)
@@ -294,16 +345,23 @@ for func = parameters_vec[func_range]
                 ecdf_looked = img_df.ECDF_looked[k]
                 ecdf_not_looked = img_df.ECDF_not_looked[k]
 
-                for (ecdf_looked, ecdf_not_looked, subject) in zip(img_df.ECDF_looked, img_df.ECDF_not_looked, img_df.subject)
+                for (ecdf_looked, ecdf_not_looked, subject) in
+                    zip(img_df.ECDF_looked, img_df.ECDF_not_looked, img_df.subject)
 
                     # Take the original data, check the index of the ecdf? Check the length of the ECDF?
                     img_ecdf_vals = ecdf_image(ecdf_range)
                     ecdf_vals_looked = ecdf_looked(ecdf_range)
                     ecdf_vals_not_looked = ecdf_not_looked(ecdf_range)
-                    first_one = max(map(
-                        y -> findfirst(x -> x == 1, y),
-                        [x for x in [img_ecdf_vals, ecdf_vals_looked, ecdf_vals_not_looked] if !all(isnan.(x))]
-                    )...)
+                    first_one = max(
+                        map(
+                            y -> findfirst(x -> x == 1, y),
+                            [
+                                x for x in
+                                [img_ecdf_vals, ecdf_vals_looked, ecdf_vals_not_looked] if
+                                !all(isnan.(x))
+                            ],
+                        )...,
+                    )
 
                     fixed_ecdf_range = ecdf_range[1:first_one]
                     img_ecdf_vals = ecdf_image(fixed_ecdf_range)
@@ -322,7 +380,8 @@ for func = parameters_vec[func_range]
                     # if !all(isnan.(ecdf_vals_not_looked))
                     ecdf_not_looking_mse = mse(img_ecdf_vals, ecdf_vals_not_looked)
                     ecdf_not_looking_error = mean(img_ecdf_vals .- ecdf_vals_not_looked)
-                    ecdf_not_looking_KS = max(abs.(img_ecdf_vals .- ecdf_vals_not_looked)...)
+                    ecdf_not_looking_KS =
+                        max(abs.(img_ecdf_vals .- ecdf_vals_not_looked)...)
 
                     _, middle_position2 = findmin(abs.(ecdf_vals_not_looked .- 0.5))
                     ecdf_not_looking_05 = fixed_ecdf_range[middle_position2]
@@ -330,13 +389,17 @@ for func = parameters_vec[func_range]
                     _, last_quarter_position2 = findmin(abs.(ecdf_vals_not_looked .- 0.75))
                     ecdf_not_looking_075 = fixed_ecdf_range[last_quarter_position2]
 
-                    ecdf_lnl_me = mean(ecdf_vals_looked .- ecdf_vals_not_looked,)
-                    ecdf_lnl_mse = mse(ecdf_vals_looked, ecdf_vals_not_looked,)
-                    ecdf_lnl_manual_KS = max(abs.(ecdf_vals_looked .- ecdf_vals_not_looked)...)
-                    ecdf_lnl_KS_statistic = teststatistic(ApproximateTwoSampleKSTest(ecdf_vals_looked, ecdf_vals_not_looked))
+                    ecdf_lnl_me = mean(ecdf_vals_looked .- ecdf_vals_not_looked)
+                    ecdf_lnl_mse = mse(ecdf_vals_looked, ecdf_vals_not_looked)
+                    ecdf_lnl_manual_KS =
+                        max(abs.(ecdf_vals_looked .- ecdf_vals_not_looked)...)
+                    ecdf_lnl_KS_statistic = teststatistic(
+                        ApproximateTwoSampleKSTest(ecdf_vals_looked, ecdf_vals_not_looked),
+                    )
                     # end
 
-                    push!(ECDF_not_looking_error_df,
+                    push!(
+                        ECDF_not_looking_error_df,
                         (
                             d,
                             subject,
@@ -358,8 +421,8 @@ for func = parameters_vec[func_range]
                             ecdf_lnl_me,
                             ecdf_lnl_mse,
                             ecdf_lnl_manual_KS,
-                            ecdf_lnl_KS_statistic
-                        )
+                            ecdf_lnl_KS_statistic,
+                        ),
                     )
                 end # ecdf subject 
             end # img

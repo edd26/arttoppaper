@@ -1,5 +1,6 @@
+
 using DrWatson
-@quickactivate "ArtTopology"
+@quickactivate "arttopopaper"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 "17ig3_ECDF_generation_not_looking.jl" |> scriptsdir |> include
@@ -8,6 +9,10 @@ using HypothesisTests
 using StatsBase: ecdf
 using HypothesisTests: OneWayANOVATest, MannWhitneyUTest
 import LaTeXStrings: latexstring
+
+
+CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+
 
 "ECDFPlotting.jl" |> srcdir |> include
 "statistics_utils.jl" |> srcdir |> include
@@ -33,16 +38,17 @@ selected_metric = :ECDF_looking_mse
 scatter_label = L"MSE(ECDF_{image}-ECDF_{subject})"
 # f2 = Figure(size=(fig_width, 2fig_height))
 
-for looking_type = [:looking, :not_looking]
+for looking_type in [:looking, :not_looking]
 
     if looking_type == :looking
         labels_vec = [:ECDF_looking_mse, :ECDF_looking_error, :ECDF_looking_KS][1:3]
     else
-        labels_vec = [:ECDF_not_looking_mse, :ECDF_not_looking_error, :ECDF_not_looking_KS][1:3]
+        labels_vec =
+            [:ECDF_not_looking_mse, :ECDF_not_looking_error, :ECDF_not_looking_KS][1:3]
     end
 
     for (metric_index, selected_metric) in enumerate(labels_vec)
-        f2 = Figure(size=(1.5fig_width, fig_height))
+        f2 = Figure(size = (1.5fig_width, fig_height))
         fgl_sub = CairoMakie.GridLayout(f2[1, 1])
         @info "Working on: $(selected_metric )"
         if occursin("mse", "$(selected_metric)")
@@ -54,11 +60,12 @@ for looking_type = [:looking, :not_looking]
         end
         d_label = split(scatter_label, "(")[1] * "\$" |> latexstring
 
-        for (func_index, func) = parameters_vec[func_range] |> enumerate
+        for (func_index, func) in parameters_vec[func_range] |> enumerate
             @info "Working on: $(func)"
-            func_related_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_error_df)
+            func_related_df =
+                filter(row -> row.parameter == "$(func)", ECDF_not_looking_error_df)
 
-            all_vals = vcat(func_related_df[:, selected_metric],)
+            all_vals = vcat(func_related_df[:, selected_metric])
             min_val = min([x for x in all_vals if !isnan(x)]...)
             max_val = max([x for x in all_vals if !isnan(x)]...)
 
@@ -75,10 +82,11 @@ for looking_type = [:looking, :not_looking]
             end
 
             art_related_df = filter(row -> row.data_name == "art", func_related_df)
-            pseudoart_related_df = filter(row -> row.data_name == "pseudoart", func_related_df)
+            pseudoart_related_df =
+                filter(row -> row.data_name == "pseudoart", func_related_df)
 
-            art_label = "Artist"
-            pseudoart_label = "Artificially Generated"
+            art_label = "Art"
+            pseudoart_label = "Pseudo-art"
 
             vec1 = [k for k in art_related_df[:, selected_metric] if !isnan(k)]
             vec2 = [k for k in pseudoart_related_df[:, selected_metric] if !isnan(k)]
@@ -94,35 +102,58 @@ for looking_type = [:looking, :not_looking]
             @info "Median value in vec1 is $(m1)"
             @info "Median value in vec2 is $(m2)"
 
-            if func == persistence
+            vec1_val = nothing
+            vec2_val = nothing
+            color_palette = nothing
+            if func == max_persistence
                 vec1_val = 1
                 vec2_val = 2
                 color_palette = [Makie.wong_colors()[5], Makie.wong_colors()[2]]
-            elseif func == max_persistence
-                vec1_val = 3
-                vec2_val = 4
-                color_palette = [Makie.wong_colors()[1:4]..., Makie.wong_colors()[3], Makie.wong_colors()[4]]
+            elseif func == density_scaled
+                vec1_val = 1
+                vec2_val = 2
+                color_palette = [
+                    # Makie.wong_colors()[1:4]...,
+                    Makie.wong_colors()[3],
+                    Makie.wong_colors()[4],
+                ]
+            elseif func == cycles_perimeter
+                vec1_val = 1
+                vec2_val = 2
+                color_palette = [
+                    # Makie.wong_colors()[1:4]...,
+                    Makie.wong_colors()[1],
+                    Makie.wong_colors()[6],
+                ]
             else
-                vec1_val = 5
-                vec2_val = 6
-                color_palette = [Makie.wong_colors()[1:4]..., Makie.wong_colors()[1], Makie.wong_colors()[6]]
+                "Unknown function" |> ErrorException |> throw
             end
 
-            stat_test_result, test_p_value = get_p_values(vec1, vec2; do_KW=do_KW, do_mann_whitney=do_mann_whitney, do_signed_rank=do_signed_rank, do_fdr_miller=do_fdr_miller)
-
-            fgl = CairoMakie.GridLayout(fgl_sub[1, func_index])
-            ax_scatter, ax_boxplot, ax_estimate = set_up_ax_distro_plt(fgl; scatter_label=scatter_label)
-            do_distro_plot(
-                ax_scatter, ax_boxplot, ax_estimate,
+            stat_test_result, test_p_value = get_p_values(
                 vec1,
                 vec2;
-                art_val=vec1_val,
-                pseudoart_val=vec2_val,
-                color_palette=color_palette
+                do_KW = do_KW,
+                do_mann_whitney = do_mann_whitney,
+                do_signed_rank = do_signed_rank,
+                do_fdr_miller = do_fdr_miller,
             )
-            ax_scatter.xticks = (vec1_val:vec2_val, ["Art", "Artificially\nGenerated",])
+
+            fgl = CairoMakie.GridLayout(fgl_sub[1, func_index])
+            ax_scatter, ax_boxplot, ax_estimate =
+                set_up_ax_distro_plt(fgl; scatter_label = scatter_label)
+            do_distro_plot(
+                ax_scatter,
+                ax_boxplot,
+                ax_estimate,
+                vec1,
+                vec2;
+                art_val = vec1_val,
+                pseudoart_val = vec2_val,
+                color_palette = color_palette,
+            )
+            ax_scatter.xticks = (vec1_val:vec2_val, ["Art", "Pseudo-art"])
             for ax in [ax_scatter, ax_boxplot, ax_estimate]
-                CairoMakie.ylims!(ax, low=y_low, high=y_high)
+                CairoMakie.ylims!(ax, low = y_low, high = y_high)
             end
 
             if test_p_value < 0.05
@@ -133,18 +164,29 @@ for looking_type = [:looking, :not_looking]
                 elseif test_p_value < 0.05
                     p_marker = "*"
                 end#
-                CairoMakie.bracket!(ax_boxplot, vec1_val, bracket_y, vec2_val, bracket_y, offset=0, text=p_marker, style=:square, fontsize=30, textoffset=-1)
+                CairoMakie.bracket!(
+                    ax_boxplot,
+                    vec1_val,
+                    bracket_y,
+                    vec2_val,
+                    bracket_y,
+                    offset = 0,
+                    text = p_marker,
+                    style = :square,
+                    fontsize = 30,
+                    textoffset = -1,
+                )
             else
                 p_marker = ""
             end # p-plot
 
             param = split("$(func)", "_")[1]
             if func_index == 1
-                indicator = "a)"
+                indicator = "A."
             elseif func_index == 2
-                indicator = "b)"
+                indicator = "B."
             elseif func_index == 3
-                indicator = "c)"
+                indicator = "C."
             end
             func_str = split("$(func)", "_")[1]
             if func == persistence
@@ -159,13 +201,14 @@ for looking_type = [:looking, :not_looking]
             latex_text = ("$(d_label), $(func_str)" |> latexstring)
             label_text = "$(indicator) $(latex_text)"
 
-            Label(fgl[0, :],
+            Label(
+                fgl[0, :],
                 "$(indicator) $(d_label), $(func_str)" |> latexstring,
-                tellheight=true,
-                tellwidth=false,
-                fontsize=18,
-                justification=:left,
-                halign=:left
+                tellheight = true,
+                tellwidth = false,
+                fontsize = 18,
+                justification = :left,
+                halign = :left,
             )
 
         end # func
@@ -181,7 +224,7 @@ for looking_type = [:looking, :not_looking]
             "section17",
             "$(scriptprefix)-$(section_name)",
             "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)",
-            args...
+            args...,
         )
 
         if do_KW
@@ -197,7 +240,15 @@ for looking_type = [:looking, :not_looking]
         end
 
         # folder_name =
-        folder_arg = join(["$(CONFIG.DATA_CONFIG)_window=$(window_size)", "$(stattest_folder)", selected_metric, looking_type], "_")
+        folder_arg = join(
+            [
+                "$(CONFIG.DATA_CONFIG)_window=$(window_size)",
+                "$(stattest_folder)",
+                selected_metric,
+                looking_type,
+            ],
+            "_",
+        )
         final_name1 = image_export_dir(folder_arg, out_name * ".png")
         @info "Saving under the name $(final_name1)"
         safesave(final_name1, f2)

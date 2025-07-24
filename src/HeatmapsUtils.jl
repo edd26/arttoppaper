@@ -1,3 +1,4 @@
+using ProgressBars
 
 """
     get_fixation_postions(fixation_per_image_per_view)
@@ -140,4 +141,15 @@ function get_cycle_boundary(cycle, img1)
     cycle_coordinates = [CartesianIndex(v1[2], v1[1]) for v1 in series if v1 .|> !isnan |> all]
 
     return cycle_coordinates
+end
+
+function get_cycles_on_image_canvas(img1, cycles)
+    cycles_on_image_canvas = fill(NaN, size(img1))
+    for (k, cycle) in ProgressBar(enumerate(cycles), unit="Cycle", unit_scale=true)
+        cycle_coordinates = get_cycle_boundary(cycle, img1)
+        cycle_persistence = persistence(cycle)
+
+        cycles_on_image_canvas[cycle_coordinates] .= cycle_persistence
+    end # cycle
+    return cycles_on_image_canvas
 end

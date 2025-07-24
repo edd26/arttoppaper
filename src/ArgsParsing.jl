@@ -9,17 +9,14 @@ function parse_plotting_commandline()
     # ===
     @add_arg_table! s begin
         "--data_set", "-d"
-        help = "Specifies data set to use"
+        help = "Specifies data set to use; possible options are: art, pseudoart"
         arg_type = String
         default = "art"
-        # default = "pseudoart"
-
 
         "--data_config", "-c"
-        help = "Specifies whether to use BW or RGB version of images; possible options are BW (black to white filtration), WB (white to black filtration), RGB (lowest-value to highest value filtration for all RGB channels), RGB_rev (highest to lowest value filtration for all RGB channels)"
+        help = "Specifies whether to use BW or RGB version of images; possible options are BW (black-to-white filtration), WB (white-to-black filtration), RGB, RGB_rev (last two run computations for each RGB channels separately, with last doing it from highest values to the lowest)"
         arg_type = String
         default = "BW"
-        # default = "WB"
 
         "--selected_dim"
         help = "Specifies dimension that will be processed"

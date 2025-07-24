@@ -29,24 +29,7 @@ Please note that the first line uses a closing square bracket to activate Julia'
 The last step will install all the packages necessary to run most of the scripts.
 However, 2 additional dependencies are required to run the code (please see below).
 
-3a. Install dependencies for DIPHA, which are CMake and MPI. On the Ubuntu system, this could be done
-with:
-```sh
-sudo apt install cmake
-sudo apt install openmpi-bin openmpi-common libopenmpi-dev
-```
-Please see the DIPHA submodule for more explanation.
-
-3b. Compile DIPHA with the following commands (DIPHA is a dependency included as a submodule):
-   ```sh
-   git submodule update --init --recursive
-   cd dipha
-   cmake ./
-   make
-   ```
-   Dipha is then used from within Julia's script to obtain cubical complexes of images.
-   
-4. Python in version 3 with Numpy version 2.0 and above
+3. Python in version 3 with Numpy version 2.0 and above
 
 Note: The DrWatson package ensures that all the file management should work out of the box,
 using repository structure for navigation. 
@@ -70,29 +53,24 @@ create inversed, greyscale of the image, which is required for some scripts).
 
 #### Preprocessing piepline
 0. Preprocess the data if needed (see above).
-1. Convert images to Dipha format with script `scripts/1a_convert_images_for_dipha.jl`
-   - this loads files from `data/exp_pro/img_initial_preprocessing`
-   - results are saved in `data/exp_pro/img_dipha_input`
-2. Run DIPHA analysis with script `scripts/1b_dipha_analysis.jl`
-   - this loads files `data/exp_pro/img_dipha_input`
-   - results are saved in `data/exp_pro/dipha_raw_results`
-3. Export birth-death diagrams from raw files with: `scripts/1c_export_birth_death_data.jl`
-   - this loads files `data/exp_pro/dipha_raw_results`
-   - results are saved in `data/exp_pro/dipha_bd_data`
 
 ### Obtaining figures from the paper
 
 Figures from the paper can be obtained by executing the scripts, e.g. the following code:
 ```julia
-julia scripts/17g_makie_plot_cycles_with_persistence.jl --data_set fake --data_config BW
+julia scripts/17g_makie_plot_cycles_with_persistence.jl --data_set pseudoart --data_config BW
 ```
 will provide figures presented in Figure 5. Option `dataset` determines which images will be used from the paper. Option `data_config` determines which filtration will be used (please see `src/ArgsParsing.jl` for all details about the arguments for the scripts). Please use the list below to obtain desired figures.
 
 List of figures that were produced with scripts
 - fig 5. Produced with 17g, 17id, 17ie2
-- fig 10. Produced with 2f3b2
-- fig 11. Produced with 2gd2
-- fig 12. Produced with 2m4
+- fig 13. Produced with 2f3b2
+- fig 14. Produced with 2gd2
+- fig 15. Produced with 2m4
+- fig 16. Produced with 17ig3lb2
+- fig 17. Produced with 17jg3k2
+
+
 - fig 13. Produced with 17g
 - fig 14. Produced with 17g and 17h
 - fig 15. Produced with 17ig3lb2
@@ -120,19 +98,35 @@ List of figures that were produced with scripts
 - Supplementary fig 3. Produced with 2f3b2
 - Supplementary fig 4. Produced with 2f3b2
 - Supplementary fig 5. Produced with 2m4
+- Supplementary fig 6. Produced with 2f3f
 - Supplementary fig 7. Produced with 2gb2a
 - Supplementary fig 8. Produced with 12c2
 - Supplementary fig 9. Produced with 17g
 - Supplementary fig 10. Produced with 17g
 - Supplementary fig 11. Produced with 17g
 - Supplementary fig 12. Produced with 17g
-- Supplementary fig 13. Produced with 17h4
-- Supplementary fig 14. Produced with 17ig2g and 17jg2g 
-- Supplementary fig 15. Produced with 17ig2g and 17jg2g 
-- Supplementary fig 16. Produced with 17ig2g and 17jg2g 
-- Supplementary fig 17. Produced with 17ig3da 
-- Supplementary fig 18. Produced with 17ig3da 
-- Supplementary fig 18. Produced with 17ig3da 
+- Supplementary fig 13. Produced with 2f3hb
+- Supplementary fig 14. Produced with 2f3hb
+- Supplementary fig 15. Produced with 2f3hb
+- Supplementary fig 16. Produced with 2f3hb
+- Supplementary fig 17. Produced with 2f3hb
+- Supplementary fig 18. Produced with 2f3hb
+- Supplementary fig 19. Produced with 2f3hb
+- Supplementary fig 20. Produced with 2f3hb
+- Supplementary fig 21. Produced with 2n3a
+- Supplementary fig 22. Produced with 2n3a
+- Supplementary fig 23. Produced with 2n3a
+- Supplementary fig 24. Produced with 2n3a
+- Supplementary fig 25. Produced with 2n3b
+- Supplementary fig 26. Produced with 2n3b
+- Supplementary fig 27. Produced with 17h4
+- Supplementary fig 28. Produced with 17ig2g and 17jg2g  
+- Supplementary fig 29. Produced with 17ig2g and 17jg2g 
+- Supplementary fig 30. Produced with 17ig2g and 17jg2g
+- Supplementary fig 31. Produced with 17ig3da 
+- Supplementary fig 32. Produced with 17ig3da 
+- Supplementary fig 33. Produced with 17ig3da 
+
 
 ### Section 17
 

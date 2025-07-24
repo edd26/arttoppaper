@@ -1,6 +1,57 @@
 get_items_count_from_window(cycles_window) =
     length([k for k in cycles_window if !isnan(k)])
 
+function count_cycles_pixels_in_windows(cycles_map, window_size,)
+    total_rows, total_cols = size(cycles_map)
+    last_col_range = 0
+    last_row_range = 0
+    cycles_count_in_window = []
+    for row in 1:window_size:(total_rows-window_size),
+        col in 1:window_size:(total_cols-window_size)
+
+        row_range = row:(row+window_size-1)
+        col_range = col:(col+window_size-1)
+        cycles_window = cycles_map[row_range, col_range]
+
+        push!(cycles_count_in_window,
+            cycles_window |> get_items_count_from_window
+        )
+        last_col_range = col_range
+        last_row_range = row_range
+    end
+
+    final_row_range = (last_row_range[end]+1):total_rows
+    final_col_range = (last_col_range[end]+1):total_cols
+
+    # Last rows, top to bottom
+    for col in 1:window_size:(total_cols-window_size)
+        col_range = col:(col+window_size-1)
+
+        cycles_window = cycles_map[final_row_range, col_range]
+        push!(cycles_count_in_window,
+            cycles_window |> get_items_count_from_window
+        )
+    end
+
+    # Last rows, left to right
+    for row in 1:window_size:(total_rows-window_size)
+        row_range = row:(row+window_size-1)
+        cycles_window = cycles_map[row_range, final_col_range]
+
+        push!(cycles_count_in_window,
+            cycles_window |> get_items_count_from_window
+        )
+    end
+
+    # Last rows, last cols
+    cycles_window = cycles_map[final_row_range, final_col_range]
+    push!(cycles_count_in_window,
+        cycles_window |> get_items_count_from_window
+    )
+
+    return cycles_count_in_window
+end
+
 get_unique_items_from_window(cycles_window) =
     [k for k in cycles_window if !isnan(k)] |> unique
 
@@ -256,6 +307,8 @@ function density(img_cycles, window_size; default_map_value=NaN)
         img_cycles,
         window_size,)
 
+    # total_cycles = [k for k in unique(img_cycles) if !isnan(k)] |> length
+
     total_grid_rows = max([k[1] for (k, v) in unique_cycles_count]...)
     total_grid_cols = max([k[2] for (k, v) in unique_cycles_count]...)
 
@@ -265,8 +318,8 @@ function density(img_cycles, window_size; default_map_value=NaN)
             parameter_map[k[1], k[2]] = v
         end
     end
-
-    parameters_values = [v for (k, v) in unique_cycles_count]
+    # parameter_map ./= total_cycles
+    parameters_values = [v for (k, v) in unique_cycles_count] # ./ total_cycles
 
     return parameter_map, parameters_values
 end
@@ -412,71 +465,46 @@ function get_heatmap_windows(
     return subject_looking, mean_heatmap_in_window
 end
 
-function teststatistic(x)
-    n = x.n_x * x.n_y / (x.n_x + x.n_y)
-    sqrt(n) * x.δ
-end
-function resolve_with_max(max_values)
-    if all(isnan.(max_values))
-        return NaN
-    elseif isnan(max_values[1])
-        return max_values[2]
-    elseif isnan(max_values[2])
-        return max_values[1]
-    else
-        return max(max_values...)
-    end
-end
-function resolve_with_sum(max_values)
-    if all(isnan.(max_values))
-        return NaN
-    elseif isnan(max_values[1])
-        return max_values[2]
-    elseif isnan(max_values[2])
-        return max_values[1]
-    else
-        return sum(max_values)
-    end
-end
+"""
 
-
-function get_parameters_map_from_joined_filtration(parameter_map_BW, parameter_map_WB, func)
-    merged_maps = cat(parameter_map_BW, parameter_map_WB, dims=3)
-    total_rows, total_cols = size(parameter_map_BW)
-    parameter_map = zeros(total_rows, total_cols)
-    for row in 1:total_rows, col in 1:total_cols
-        max_values = merged_maps[row, col, :]
-
-        if func == density || func == density_scaled
-            parameter_map[row, col] = resolve_with_sum(max_values)
-        elseif func == max_persistence || func == persistence
-            parameter_map[row, col] = resolve_with_max(max_values)
-        elseif func == cycles_perimeter
-            parameter_map[row, col] = resolve_with_max(max_values)
-        else
-            ErrorException("Function not known") |> throw
-        end
-
-    end
-    return parameter_map
-end
-function get_parameters_values_from_joined_filtration(parameters_values_BW, parameters_values_WB, func)
-    parameters_values = Float64[]
-    for (param_BW, param_WB) in zip(parameters_values_BW, parameters_values_WB)
-        joined_values = [param_BW, param_WB]
-        if func == density || func == density_scaled
-            push!(parameters_values, resolve_with_sum(joined_values))
-        elseif func == max_persistence || func == persistence
-            push!(parameters_values, resolve_with_max(joined_values))
-        elseif func == cycles_perimeter
-            push!(parameters_values, resolve_with_max(joined_values))
-        else
-            ErrorException("Function not known") |> throw
+similar effect can be achieved with :
+    using StatsBase: ecdf
+    ecdf_sb = ecdf(x1; weights)
+"""
+function get_fixed_range_ecdf(x1, weights)
+    rounded_values = round.(Int, x1)
+    vec2 = Int[]
+    for (weight, value) in zip(weights, rounded_values)
+        for k in 1:ceil(weight)
+            push!(vec2, value)
         end
     end
+    counted_map = countmap(rounded_values, weights) |> sort
 
-    if typeof(parameters_values) != Vector{Float64}
-        parameters_values = Vector{Float64}(parameters_values)
+    y_vals = [counts for (_, counts) in counted_map]
+    x_vals = [x_vals for (x_vals, _) in counted_map] .+ 1 # +1 to shift to fit indexing
+
+    cumulative_probs = cumsum(y_vals)
+    cumulative_probs_norm = cumulative_probs ./ max(cumulative_probs...)
+
+
+    full_x = 1:256
+    previous_value = cumulative_probs_norm[1]
+    for x in full_x[2:end]
+        if new_y_values[x] == 0
+            new_y_values[x] = previous_value
+        end
+        previous_value = new_y_values[x]
     end
-    return parameters_values
+
+    return full_x, new_y_values
+    # f = Figure()
+    # ax = CairoMakie.Axis(f[1, 1])
+
+    # x_vals = 0:1:255
+
+    # stairs!(ax, full_x, new_y_values, color=:red)
+    # stairs!(ax, x_vals, ecdf_sb.(x_vals),color=:black)
+    # ecdfplot!(ax, rounded_values, weights=round.(Int, hist_weights), color=:blue)
+    # f
 end

@@ -44,7 +44,7 @@ struct ImgSize
 end
 
 ## ===-===-
-function get_barcodes_info_with_dipha(bw_img_resized, img_name, data_set; img_config::String="BW", id::String="")
+function get_data_matrix_from_file(bw_img_resized, img_name, data_set; img_config::String="BW", id::String="")
     ## ===-===-
     # 0b >>>
     scaled_img = floor.(Int, bw_img_resized .* 255)

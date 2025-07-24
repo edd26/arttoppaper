@@ -38,8 +38,6 @@ TOTAL_IMAGES = total_images
 force_image_export = false
 FIXATION_SEQUENCE = fixation_sequence
 LONGEST_FIXATION_SEQUENCE = longest_fixation_sequence
-# ===-===-
-dipha_exec = projectdir("dipha", "dipha")
 
 # ===-===-
 ENV["GKSwstype"] = "100"
@@ -50,10 +48,7 @@ artist_raw_path_args = ("art",)
 pseudoart_raw_path_args = ("pseudoart",)
 
 
-raw_paths = [
-    artist_raw_path_args,
-    pseudoart_raw_path_args,
-]
+raw_paths = [artist_raw_path_args, pseudoart_raw_path_args]
 
 # ===-===-
 TOTAL_NOISE_IMAGES = 100
@@ -71,32 +66,29 @@ VIEWING_HEIGHT = 1066
 # ===-===-===-===-===-===-
 function set_path_args(data_set, image_type)
     path_args = ("", "")
-    if data_set .== "art"
+    if any(data_set .== ["art", "pseudoart"])
         if image_type == "BW"
             path_args = ("BW", data_set)
+        elseif image_type == "resized_BW"
+            path_args = ("resized_BW", data_set)
         elseif image_type == "WB"
             path_args = ("WB", data_set)
+        elseif image_type == "RGB"
+            path_args = ("RGB", data_set)
+        elseif image_type == "RGB_rev"
+            path_args = ("RGB_rev", data_set)
         else
             ErrorException("Unknow data config. Failed to parse arguments") |> throw
         end
 
-    elseif data_set == "pseudoart"
+    elseif data_set == "SimpleExamples"
         if image_type == "BW"
-            path_args = ("BW", "pseudoart",)
+            path_args = ("BW", "SimpleExamples")
         elseif image_type == "WB"
-            path_args = ("WB", "pseudoart",)
-        else
-            ErrorException("Unknow data config. Failed to parse arguments") |> throw
+            path_args = ("WB", "SimpleExamples")
         end
-
     else
-        if image_type == "BW"
-            path_args = ("BW", data_set)
-        elseif image_type == "WB"
-            path_args = ("WB", data_set,)
-        else
-            ErrorException("Unknow data config. Failed to parse arguments") |> throw
-        end
+        ErrorException("Unknow data set. Failed to parse arguments") |> throw
     end
 
     return path_args
@@ -107,17 +99,9 @@ path_args = set_path_args(data_set, data_config)
 # 0:
 preproc_img_dir(args...) = datadir("exp_pro", "img_initial_preprocessing", args...)
 preproc_img_dir_set(args...) = preproc_img_dir(path_args..., args...)
-# 1:
-export_for_dipha_folder(args...) = datadir("exp_pro", "img_dipha_input", args...)
-export_for_dipha_folder_set(args...) = export_for_dipha_folder(path_args..., args...)
-# 2:
-dipha_raw_export_folder(args...) = datadir("exp_pro", "dipha_raw_results", args...)
-dipha_raw_export_folder_set(args...) = dipha_raw_export_folder(path_args..., args...)
-# 3
-dipha_bd_info_export_folder(args...) = datadir("exp_pro", "dipha_bd_data", args...)
-dipha_bd_info_export_folder_set(args...) = dipha_bd_info_export_folder(path_args..., args...)
 
-homology_info_storage(args...) = datadir("exp_pro", "section17", "17e-hausdorff_computations", args...)
+ripserer_computations_dir(args...) =
+    datadir("exp_pro", "ripserer_computations", "ripserer-cubical", args...)
 # --------
 
 # pseudoart images order
