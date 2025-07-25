@@ -69,8 +69,6 @@ for dataset in ["pseudoart", "art"]
 
         # Load image
         img1 = name * extension |> simple_img_dir |> load
-        @warn "Resizing set to 0.1, to speed up computations"
-        img1 = imresize(img1, ratio = 0.1)
         scaled_img = floor.(Int, Gray.(img1) .* 255)
         scaled_img_WB = abs.(scaled_img .- 255)
 

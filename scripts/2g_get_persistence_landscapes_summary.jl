@@ -87,8 +87,6 @@ for data in data_sets
             @info "\tComputing landscapes info for file: " file
 
             img1 = file * extension |> simple_img_dir |> load
-            @warn "Resizing set to 0.1, to speed up computations"
-            img1 = imresize(img1, ratio = 0.1)
             scaled_img = floor.(Int, Gray.(img1) .* last_of_filtration)
             scaled_img_WB = abs.(scaled_img .- last_of_filtration)
 
