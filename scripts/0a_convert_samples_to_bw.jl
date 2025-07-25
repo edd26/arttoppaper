@@ -11,6 +11,7 @@ using Images
 
 # ===-===-===-===-===-===-===-===-
 "config.jl" |> scriptsdir |> include
+"loading_utils.jl" |> srcdir |> include
 
 import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET
 
@@ -23,7 +24,7 @@ for raw_path in data_sets
 
     raw_img_path(args...) = datadir("exp_raw", raw_path..., args...)
     all_sample_files =
-        [k for k in raw_img_path() |> readdir if occursin("jpg", k) || occursin("png", k)]
+        [k for k in raw_img_path() |> readdir |> filter_out_hidden if occursin("jpg", k) || occursin("png", k)]
 
     for sample_image in all_sample_files
         @info sample_image
