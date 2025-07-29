@@ -7,9 +7,6 @@ using DataStructures: OrderedDict
 using DelimitedFiles
 using Images
 using PersistenceLandscapes
-# using Makie
-# using CairoMakie
-using TopologyPreprocessing
 using Pipe
 using Ripserer
 
