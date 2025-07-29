@@ -52,11 +52,16 @@ cleanup_filenames(files_names) = @pipe files_names .|>
       unique
 unique_names = cleanup_filenames(files_names)
 
-suffixes = ["R", "G", "B"]
+suffixes = if occursin("RGB", CONFIG.DATA_CONFIG)
+    ["R", "G", "B"]
+  else
+    [CONFIG.DATA_CONFIG, ]
+  end
 
-if DATA_CONFIG == "RGB_rev"
+if CONFIG.DATA_CONFIG == "RGB_rev"
     suffixes .*= "_rev"
 end
+
 groupped_files_names = [map(c->f*"_$(c)", suffixes) for f in unique_names]
 
 single_image_files_names = groupped_files_names[1]
