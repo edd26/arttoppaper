@@ -80,15 +80,15 @@ for file in files_names
         [scaled_img, scaled_img_WB]
     end
 
-    for (CONFIG.DATA_CONFIG, input_img) in zip(config_list, img_list)
+    for (local_config, input_img) in zip(config_list, img_list)
 
-        if CONFIG.DATA_CONFIG == "BW" || CONFIG.DATA_CONFIG == "RGB"
+        if local_config == "BW" || local_config == "RGB"
             loading_name = name
         else
             loading_name = replace(name, "BW" => "WB")
         end
 
-        @info CONFIG.DATA_CONFIG
+        @info local_config
         # ===-===-
         # Get cycles and their persistence
         alg = :homology
@@ -118,7 +118,7 @@ for file in files_names
         # end
 
         homology_info = homology_data["homolgy_result"]
-        all_homology_info[CONFIG.DATA_CONFIG][loading_name] = homology_info
+        all_homology_info[local_config][loading_name] = homology_info
 
         for (dim_index, selected_dim) in enumerate([0, 1])
             births = [barcode[1] for barcode in homology_info[dim_index]]
@@ -148,13 +148,12 @@ for file in files_names
 
             bettis = Dict(:x => x_range, :y => betticurve)
 
-            persistence_data[CONFIG.DATA_CONFIG]["dim$(selected_dim)"][loading_name] =
-                Dict()
-            persistence_data[CONFIG.DATA_CONFIG]["dim$(selected_dim)"][loading_name]["landscapes"] =
+            persistence_data[local_config]["dim$(selected_dim)"][loading_name] = Dict()
+            persistence_data[local_config]["dim$(selected_dim)"][loading_name]["landscapes"] =
                 PersistenceLandscape(barcodes)
-            persistence_data[CONFIG.DATA_CONFIG]["dim$(selected_dim)"][loading_name]["barcodes"] =
+            persistence_data[local_config]["dim$(selected_dim)"][loading_name]["barcodes"] =
                 bd_data
-            persistence_data[CONFIG.DATA_CONFIG]["dim$(selected_dim)"][loading_name]["betti"] =
+            persistence_data[local_config]["dim$(selected_dim)"][loading_name]["betti"] =
                 bettis
         end # selected_dim
     end # config
