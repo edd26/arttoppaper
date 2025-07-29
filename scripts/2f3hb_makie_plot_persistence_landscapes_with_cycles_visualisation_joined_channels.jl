@@ -64,7 +64,7 @@ end
 
 groupped_files_names = [map(c->f*"_$(c)", suffixes) for f in unique_names]
 
-single_image_files_names = groupped_files_names[1]
+
 for single_image_files_names in groupped_files_names
     @info "Now working on:" single_image_files_names
 
@@ -76,7 +76,7 @@ for single_image_files_names in groupped_files_names
 
 
         input_img_name = name * extension
-        if !occursin(DATA_CONFIG, name) && DATA_CONFIG != "RGB" && DATA_CONFIG != "RGB_rev"
+        if !occursin(DATA_CONFIG, name) && CONFIG.DATA_CONFIG != "RGB" && CONFIG.DATA_CONFIG != "RGB_rev"
             input_img_name = name * "_$(DATA_CONFIG)" * extension
         else
             input_img_name = name * extension
@@ -90,7 +90,7 @@ for single_image_files_names in groupped_files_names
 
         # Get cycles on canvas
         dim_index = 2
-        cycles = all_homology_info[DATA_CONFIG][name][dim_index]# [persistances.<20]
+        cycles = all_homology_info[CONFIG.DATA_CONFIG][name][dim_index]# [persistances.<20]
         cycles_on_image_canvas = get_cycles_on_image_canvas(loaded_img, cycles)
 
         fgl = CairoMakie.GridLayout(fgl_main[row_index, 1])
@@ -119,11 +119,11 @@ for single_image_files_names in groupped_files_names
         end
 
         # ===-===-
-        img_to_plot = if DATA_CONFIG == "RGB" || DATA_CONFIG == "RGB_rev"
+        img_to_plot = if CONFIG.DATA_CONFIG == "RGB" || CONFIG.DATA_CONFIG == "RGB_rev"
 
-            file_colour = if DATA_CONFIG == "RGB"
+            file_colour = if CONFIG.DATA_CONFIG == "RGB"
                 split(name, "_")[end]
-            elseif DATA_CONFIG == "RGB_rev"
+            elseif CONFIG.DATA_CONFIG == "RGB_rev"
                 split(name, "_")[end-1]
             end
 
@@ -183,7 +183,7 @@ for single_image_files_names in groupped_files_names
         for (ax, local_dim, colour_vec) in
             zip([ax_pland0, ax_pland1], ["dim0", "dim1"], color_vectors)
             max_colour_range =
-                size(persistence_data[data_config][local_dim][name]["landscapes"].land, 1)
+                size(persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"].land, 1)
             custom_colors = [
                 RGBf(c) for c in cgrad(
                     colour_vec,
@@ -194,7 +194,7 @@ for single_image_files_names in groupped_files_names
             ]
             plot_persistence_landscape!(
                 ax,
-                persistence_data[data_config][local_dim][name]["landscapes"],
+                persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"],
                 custom_colors = custom_colors,
             )
             push!(pland_max_vals, max_colour_range)
@@ -225,14 +225,14 @@ for single_image_files_names in groupped_files_names
         colours = get_bettis_color_palete(min_dim = 0)
 
         if sort_by_death
-            persistence_dim0 = persistence_data[data_config]["dim0"][name]["barcodes"][1]
-            persistence_dim1 = persistence_data[data_config]["dim1"][name]["barcodes"][1]
+            persistence_dim0 = persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
+            persistence_dim1 = persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
             persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 2]), :]
             persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 2]), :]
         else
-            persistence_dim0 = persistence_data[data_config]["dim0"][name]["barcodes"][1]
-            persistence_dim1 = persistence_data[data_config]["dim1"][name]["barcodes"][1]
+            persistence_dim0 = persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
+            persistence_dim1 = persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
             persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 1]), :]
             persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 1]), :]
@@ -312,7 +312,7 @@ for single_image_files_names in groupped_files_names
     # ===-===-===-
     name_base = cleanup_filenames(single_image_files_names)[1]
 
-    name = name_base * "_" * DATA_CONFIG
+    name = name_base * "_" * CONFIG.DATA_CONFIG
     @info "Saving file: $(name)"
     out_img_name = "$(split(name, ".csv")[1]).png"
     thr = "threshold=$(PERSISTENCE_THRESHOLD)"
