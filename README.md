@@ -11,11 +11,12 @@ The code was written by Emil Dmitruk*, and the underlying ideas are the result o
 
 This code base is using the Julia Language and [DrWatson](https://juliadynamics.github.io/DrWatson.jl/stable/)
 to make a reproducible scientific project named
-> ArtTopology
+> arttoppaper
 
 ## Installation and requirements
 0. Download this code base. Notice that raw data are typically not included in the
    git-history and may need to be downloaded independently.
+   - raw data should be placed in under "data/exp_raw"
 1. Open the terminal and navigate to the downloaded repository
 2. Run Julia in the terminal and run the following:
    ```
@@ -27,7 +28,7 @@ to make a reproducible scientific project named
 Please note that the first line uses a closing square bracket to activate Julia's package manager.
 
 The last step will install all the packages necessary to run most of the scripts.
-However, 2 additional dependencies are required to run the code (please see below).
+However, 1 additional dependency is required to run the code (please see below).
 
 3. Python in version 3 with Numpy version 2.0 and above
 
@@ -39,9 +40,10 @@ using repository structure for navigation.
 All images must be converted into grayscale before being used in the repository.
 This can be done with the script `scripts/0a_convert_samples_to_bw.jl`. In order
 to utilise the automation of the script for a dataset, it is advised to do the following:
-1. Add a dataset to folder `data/exp_raw` under some name, e.b. `dataset1`
+1. Add a dataset to folder `data/exp_raw` under some name, e.g. `art` and `pseudoart`
 2. Add a tuple with the dataset name to the configuration file `scripts/config.jl` under "Datasets
-paths configuration" and add it to the `raw_paths` variable (please see that file for 2 samples).
+paths configuration" and add it to the `raw_paths` variable (please see that file for 2 samples 
+that were used in the paper).
 3. Run the conversion script as
 ```julia
 julia scripts/0a_convert_samples_to_bw.jl --data_set dataset1 --data_config BW
@@ -51,16 +53,16 @@ create inversed, greyscale of the image, which is required for some scripts).
    - this loads files from `data/exp_raw/dataset1`
    - results are saved in `data/exp_pro/img_initial_preprocessing/dataset1`
 
-#### Preprocessing piepline
-0. Preprocess the data if needed (see above).
-
-### Obtaining figures from the paper
+## Obtaining figures from the paper
 
 Figures from the paper can be obtained by executing the scripts, e.g. the following code:
 ```julia
-julia scripts/17g_makie_plot_cycles_with_persistence.jl --data_set pseudoart --data_config BW
+julia scripts/2gd2_makie_average_landscapes_comparison_all_landscapes.jl --data_set pseudoart --data_config BW
 ```
-will provide figures presented in Figure 5. Option `dataset` determines which images will be used from the paper. Option `data_config` determines which filtration will be used (please see `src/ArgsParsing.jl` for all details about the arguments for the scripts). Please use the list below to obtain desired figures.
+will provide figures presented in Figure 14. Option `dataset` determines which images will be 
+used from the paper. Option `data_config` determines which filtration will be used 
+(please see `src/ArgsParsing.jl` for all details about the arguments for the scripts). 
+Please use the list below to obtain desired figures.
 
 List of figures that were produced with scripts
 - fig 5. Produced with 17g, 17id, 17ie2
@@ -70,31 +72,7 @@ List of figures that were produced with scripts
 - fig 16. Produced with 17ig3lb2
 - fig 17. Produced with 17jg3k2
 
-
-- fig 13. Produced with 17g
-- fig 14. Produced with 17g and 17h
-- fig 15. Produced with 17ig3lb2
-- fig 10. Produced with 2f3b2
-- fig 11. Produced with 2gd2
-- fig 12. Produced with 2m4
-- fig 13. Produced with 17g
-- fig 14. Produced with 17g and 17h
-- fig 15. Produced with 17ig3lb2
-- fig 10. Produced with 2f3b2
-- fig 11. Produced with 2gd2
-- fig 12. Produced with 2m4
-- fig 13. Produced with 17g
-- fig 14. Produced with 17g and 17h
-- fig 15. Produced with 17ig3lb2
-- fig 10. Produced with 2f3b2
-- fig 11. Produced with 2gd2
-- fig 12. Produced with 2m4
-- fig 13. Produced with 17g
-- fig 14. Produced with 17g and 17h
-- fig 15. Produced with 17ig3lb2
-- fig 16. Produced with 17jg3k2
-- fig 17. Produced with 14c
-
+List of Supplementary figures that were produced with scripts
 - Supplementary fig 3. Produced with 2f3b2
 - Supplementary fig 4. Produced with 2f3b2
 - Supplementary fig 5. Produced with 2m4
@@ -133,3 +111,6 @@ List of figures that were produced with scripts
 To run code from the section 17, Python has to be installed, together with a
 Numpy library- an error will be thrown if Numpy is not available. If this happens,
 please follow the instructions provided in the message.
+
+Please note that those computations are may take a while and the saved
+intermidiate results may take a lot of disk space.
