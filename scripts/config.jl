@@ -66,7 +66,7 @@ VIEWING_HEIGHT = 1066
 # ===-===-===-===-===-===-
 function set_path_args(data_set, image_type)
     path_args = ("", "")
-    if any(data_set .== ["art", "pseudoart"])
+    if any(data_set .== ["art", "pseudoart", "all_pseudoart"])
         if image_type == "BW"
             path_args = ("BW", data_set)
         elseif image_type == "resized_BW"
