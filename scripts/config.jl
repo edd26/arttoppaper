@@ -44,11 +44,16 @@ ENV["GKSwstype"] = "100"
 
 # ===-===-
 # Datasets paths configuration
-artist_raw_path_args = ("art",)
-pseudoart_raw_path_args = ("pseudoart",)
-
-
-raw_paths = [artist_raw_path_args, pseudoart_raw_path_args]
+raw_paths = [
+    ("art",),
+    ("pseudoart",),
+    ("Jarema",),
+    ("Kandinsky",),
+    ("Malewicz",),
+    ("Pollock",),
+    ("Richter",),
+    ("Rothko",),
+]
 
 # ===-===-
 TOTAL_NOISE_IMAGES = 100
