@@ -18,13 +18,23 @@ import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Image loading
 set1 = ["art", "pseudoart"]
-data_sets = [path for path in CONFIG.raw_paths if any(occursin.(set1, path[1]))]
+set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
+selected_set = if DATA_SET in set1
+    set1
+elseif DATA_SET in set2
+    set2
+else
+    ErrorException("Unrecognised dataset.") |> throw
+end
+data_sets = [path for path in CONFIG.raw_paths if any(occursin.(selected_set, path[1]))]
 
 for raw_path in data_sets
 
     raw_img_path(args...) = datadir("exp_raw", raw_path..., args...)
-    all_sample_files =
-        [k for k in raw_img_path() |> readdir |> filter_out_hidden if occursin("jpg", k) || occursin("png", k)]
+    all_sample_files = [
+        k for k in raw_img_path() |> readdir |> filter_out_hidden if
+        occursin("jpg", k) || occursin("png", k)
+    ]
 
     for sample_image in all_sample_files
         @info sample_image
