@@ -71,29 +71,19 @@ VIEWING_HEIGHT = 1066
 # ===-===-===-===-===-===-
 function set_path_args(data_set, image_type)
     path_args = ("", "")
-    if any(data_set .== ["art", "pseudoart", "all_pseudoart"])
-        if image_type == "BW"
-            path_args = ("BW", data_set)
-        elseif image_type == "resized_BW"
-            path_args = ("resized_BW", data_set)
-        elseif image_type == "WB"
-            path_args = ("WB", data_set)
-        elseif image_type == "RGB"
-            path_args = ("RGB", data_set)
-        elseif image_type == "RGB_rev"
-            path_args = ("RGB_rev", data_set)
-        else
-            ErrorException("Unknow data config. Failed to parse arguments") |> throw
-        end
-
-    elseif data_set == "SimpleExamples"
-        if image_type == "BW"
-            path_args = ("BW", "SimpleExamples")
-        elseif image_type == "WB"
-            path_args = ("WB", "SimpleExamples")
-        end
+    # if any(data_set .== ["art", "pseudoart", "all_pseudoart"])
+    if image_type == "BW"
+        path_args = ("BW", data_set)
+    elseif image_type == "resized_BW"
+        path_args = ("resized_BW", data_set)
+    elseif image_type == "WB"
+        path_args = ("WB", data_set)
+    elseif image_type == "RGB"
+        path_args = ("RGB", data_set)
+    elseif image_type == "RGB_rev"
+        path_args = ("RGB_rev", data_set)
     else
-        ErrorException("Unknow data set. Failed to parse arguments") |> throw
+        ErrorException("Unknow data config. Failed to parse arguments") |> throw
     end
 
     return path_args
