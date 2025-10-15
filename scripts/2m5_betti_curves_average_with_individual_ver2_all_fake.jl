@@ -41,7 +41,8 @@ extension = ".jpg"
 # ===-===-===-
 # for d in artists_datasets
 
-artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
+artists_datasets =
+    set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
 artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
 total_img_per_artist = Dict()
 
@@ -69,7 +70,6 @@ cutoff = PERSISTENCE_THRESHOLD
         # for name in artist_bw_files_names
         @info "Working on file $(name)"
 
-        force_computations = false
 
         # load image
         img1 = name * extension |> simple_img_dir |> load
@@ -136,7 +136,7 @@ batch_size = 225
 @sync for batch = 1:batch_size:4500
     @spawn for name in bw_files_names[batch:(batch+batch_size-1)]
         continue
-        @info "Working on file $(file)"
+        @info "Working on file $(name)"
 
         # load image
         img1 = name * extension |> simple_img_dir |> load
