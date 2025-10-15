@@ -22,11 +22,7 @@ scriptprefix = "2f3b3"
 "LandscapesPlotting.jl" |> srcdir |> include
 "MakiePlots.jl" |> srcdir |> include
 
-import .CONFIG:
-    preproc_img_dir,
-    SELECTED_DIM,
-    PERSISTENCE_THRESHOLD,
-    DATA_CONFIG
+import .CONFIG: preproc_img_dir, SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_CONFIG
 import .CONFIG: ripserer_computations_dir
 
 @info "Arguments processed."
@@ -97,7 +93,7 @@ for data_config in configs_dir_vector
             homology_data, p = produce_or_load(
                 ripserer_computations_dir(
                     CONFIG.DATA_SET,
-                    "image_$(replace(loading_name, ".jpg"=>""))",
+                    "image_$(replace(loading_name, "$(extension)"=>""))",
                 ), # path
                 homology_config, # config
                 prefix = "homology_info", # file prefix
