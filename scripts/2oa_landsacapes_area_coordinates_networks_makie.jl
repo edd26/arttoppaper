@@ -16,41 +16,12 @@ using CairoMakie
 using Random
 import Printf: @sprintf
 
-import PlotUtils
 using Pipe
 
 CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 update_theme!(fontsize = 18)
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 y_dim_lims = (1e1, 1e9)
-y_dim_ticks = [1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7, 1e8, 1e8, 1e9]
-
-my_palette = PlotUtils.palette(:Paired_10, 10);
-net_palette = PlotUtils.palette(:YlOrRd_9, 9);
-net_palette2 = PlotUtils.palette(:Set1_9, 10);
-
-plt_atributes = Dict(
-    "art" => (m=:star6, c=my_palette[6]),
-    "pseudoart" => (m=:star4, c=my_palette[9]),
-    "Kandinsky" => (m=:pentagon, c=my_palette[2]),
-    "textures" => (m=:utriangle, c=my_palette[10]),
-    "Pollock" => (m=:diamond, c=net_palette2[1]),
-    "Rothko" => (m=:star5, c=net_palette2[2]),
-    "Mark" => (m=:xcross, c=net_palette2[1]),
-    "Jarema" => (m=:star6, c=net_palette2[3]),
-    "Malewicz" => (m=:star8, c=net_palette2[4]),
-    "Richter" => (m=:dtriangle, c=net_palette2[4]),
-    "all_pseudoart" => (m=:hexagon, c=my_palette[7]),
-    "net0" => (m=:circle, c=net_palette[1]),
-    "net1" => (m=:circle, c=net_palette[2]),
-    "net2" => (m=:circle, c=net_palette[3]),
-    "net3" => (m=:circle, c=net_palette[4]),
-    "net4" => (m=:circle, c=net_palette[5]),
-    "net5" => (m=:circle, c=net_palette[6]),
-    "net6" => (m=:circle, c=net_palette2[7]),
-    "net7" => (m=:circle, c=net_palette2[8]),
-    "net8" => (m=:circle, c=net_palette2[end]),
-)
 
 scatter_plt_vec = []
 scatter_plt_names = String[]
