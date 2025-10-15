@@ -76,49 +76,54 @@ cutoff = PERSISTENCE_THRESHOLD
         scaled_img = floor.(Int, gray.(img1) .* 255)
         scaled_img_wb = abs.(scaled_img .- 255)
 
-        selected_dim = 0
-        selected_config = CONFIG.data_config
-        input_img = scaled_img
+        for (selected_config, input_img) = zip(["BW", "WB"], [scaled_img, scaled_img_wb])
 
-        if selected_config == "BW"
-            loading_name = name
-        else
-            loading_name = replace(name, "BW" => "WB")
-        end
+            if selected_config == "BW"
+                loading_name = name
+            else
+                loading_name = replace(name, "BW" => "WB")
+            end
 
-        # @info selected_config
-        # ===-===-
-        # get cycles and their persistence
-        homology_config = @dict alg reps cutoff input_img
+            @info "\t$(selected_config)"
+            # ===-===-
+            # get cycles and their persistence
+            homology_config = @dict alg reps cutoff input_img
 
-        homology_data, p = produce_or_load(
-            ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
-            homology_config, # config
-            prefix="homology_info", # file prefix
-            force=force_computations, # force computations
-        ) do homology_config
-            @unpack alg, reps, cutoff, input_img = homology_config
-            println("\tStarting homology computations...")
-            homolgy_result =
-                ripserer(Cubical(input_img), cutoff=cutoff, reps=reps, alg=alg)
-            println("\tFinished homology computations. ")
+            homology_data, p = produce_or_load(
+                ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
+                homology_config, # config
+                prefix="homology_info", # file prefix
+                force=force_computations, # force computations
+            ) do homology_config
+                @unpack alg, reps, cutoff, input_img = homology_config
+                println("\tStarting homology computations...")
+                homolgy_result =
+                    ripserer(Cubical(input_img), cutoff=cutoff, reps=reps, alg=alg)
+                println("\tFinished homology computations. ")
 
-            homology_info = homolgy_result
-            landscapes_dict = Dict()
-            println("\tStarting producion of landsacpes... ")
-            for (dim_index, selected_dim) in enumerate([0, 1])
-                births = [barcode[1] for barcode in homology_info[dim_index]]
-                deaths = [barcode[2] for barcode in homology_info[dim_index]]
-                barcodes =
-                    [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes
+                homology_info = homolgy_result
+                births_dict = Dict()
+                deaths_dict = Dict()
+                landscapes_dict = Dict()
+                println("\tStarting producion of landsacpes... ")
+                for (dim_index, selected_dim) in enumerate([0, 1])
+                    births = [barcode[1] for barcode in homology_info[dim_index]]
+                    deaths = [barcode[2] for barcode in homology_info[dim_index]]
+                    barcodes =
+                        [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes
 
-                landscapes_dict["dim$(selected_dim)"] = PersistenceLandscape(barcodes)
-            end # selected_dim
-            println("\tFinished landsacpes. ")
+                    births_dict["dim$(selected_dim)"] = births
+                    deaths_dict["dim$(selected_dim)"] = deaths
+                    landscapes_dict["dim$(selected_dim)"] = PersistenceLandscape(barcodes)
+                end # selected_dim
+                println("\tFinished landsacpes. ")
 
-            Dict("ripserer_landsacpes" => landscapes_dict)
-        end # produce_or_load
-        # end # config
+                Dict("ripserer_landsacpes" => landscapes_dict,
+                    "ripserer_births" => births_dict,
+                    "ripserer_deaths" => deaths_dict,
+                )
+            end # produce_or_load
+        end # config
     end #file
 end #datafile
 
@@ -143,48 +148,54 @@ batch_size = 225
         scaled_img = floor.(Int, gray.(img1) .* 255)
         scaled_img_wb = abs.(scaled_img .- 255)
 
-        selected_config = config.data_config
-        input_img = scaled_img
+        for (selected_config, input_img) = zip(["BW", "WB"], [scaled_img, scaled_img_wb])
 
-        if selected_config == "bw"
-            loading_name = name
-        else
-            loading_name = replace(name, "bw" => "wb")
-        end
+            if selected_config == "BW"
+                loading_name = name
+            else
+                loading_name = replace(name, "BW" => "WB")
+            end
 
-        # @info selected_config
-        # ===-===-
-        # get cycles and their persistence
-        homology_config = @dict alg reps cutoff input_img
+            # @info selected_config
+            # ===-===-
+            # get cycles and their persistence
+            homology_config = @dict alg reps cutoff input_img
 
-        homology_data, p = produce_or_load(
-            ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
-            homology_config, # config
-            prefix="homology_info", # file prefix
-            force=true, # force computations
-        ) do homology_config
-            @unpack alg, reps, cutoff, input_img = homology_config
-            println("\tStarting homology computations...")
-            homolgy_result =
-                ripserer(Cubical(input_img), cutoff=cutoff, reps=reps, alg=alg)
-            println("\tFinished homology computations. ")
+            homology_data, p = produce_or_load(
+                ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
+                homology_config, # config
+                prefix="homology_info", # file prefix
+                force=force_computations, # force computations
+            ) do homology_config
+                @unpack alg, reps, cutoff, input_img = homology_config
+                println("\tStarting homology computations...")
+                homolgy_result =
+                    ripserer(Cubical(input_img), cutoff=cutoff, reps=reps, alg=alg)
+                println("\tFinished homology computations. ")
 
-            homology_info = homolgy_result
-            landscapes_dict = Dict()
-            println("\tStarting producion of landsacpes... ")
-            for (dim_index, selected_dim) in enumerate([0, 1])
-                births = [barcode[1] for barcode in homology_info[dim_index]]
-                deaths = [barcode[2] for barcode in homology_info[dim_index]]
-                barcodes =
-                    [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes
+                homology_info = homolgy_result
+                births_dict = Dict()
+                deaths_dict = Dict()
+                landscapes_dict = Dict()
+                println("\tStarting producion of landsacpes... ")
+                for (dim_index, selected_dim) in enumerate([0, 1])
+                    births = [barcode[1] for barcode in homology_info[dim_index]]
+                    deaths = [barcode[2] for barcode in homology_info[dim_index]]
+                    barcodes =
+                        [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes
 
-                landscapes_dict["dim$(selected_dim)"] = PersistenceLandscape(barcodes)
-            end # selected_dim
-            println("\tFinished landsacpes. ")
+                    births_dict["dim$(selected_dim)"] = births
+                    deaths_dict["dim$(selected_dim)"] = deaths
+                    landscapes_dict["dim$(selected_dim)"] = PersistenceLandscape(barcodes)
+                end # selected_dim
+                println("\tFinished landsacpes. ")
 
-            Dict("ripserer_landsacpes" => landscapes_dict)
-        end # produce_or_load
-        # end # config
+                Dict("ripserer_landsacpes" => landscapes_dict,
+                    "ripserer_births" => births_dict,
+                    "ripserer_deaths" => deaths_dict,
+                )
+            end # produce_or_load
+        end # config
     end #file
 end # batch
 
