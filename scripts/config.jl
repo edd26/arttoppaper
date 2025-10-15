@@ -53,6 +53,7 @@ raw_paths = [
     ("Pollock",),
     ("Richter",),
     ("Rothko",),
+    ("SimpleExamples",),
 ]
 
 # ===-===-

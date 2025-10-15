@@ -18,6 +18,7 @@ import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Image loading
 set1 = ["art", "pseudoart"]
+set1 = ["SimpleExamples"] # TODO clean up
 set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
 selected_set = if DATA_SET in set1
     set1

@@ -38,6 +38,7 @@ else
 end
 
 dataset_names = ["pseudoart", "art"]
+dataset_names = ["SimpleExamples"]
 
 # ===-===-===-
 
