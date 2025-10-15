@@ -35,11 +35,11 @@ landscapes_dir(args...) =
 
 ## ===-===-===-===-===-===-===-===-===-===-
 land_areas = DataFrame(
-    dataset = String[],
-    pland_area = Float64[],
-    dim = Int[],
-    threshold = Float64[],
-    file = String[],
+    dataset=String[],
+    pland_area=Float64[],
+    dim=Int[],
+    threshold=Float64[],
+    file=String[],
 )
 
 # TODO missing here, but in 2m5, (artists_datasets, load_landscape)
@@ -61,21 +61,21 @@ for d in artists_datasets
         push!(
             land_areas,
             (
-                dataset = d,
-                pland_area = pland_area_dim0,
-                dim = 0,
-                threshold = CONFIG.PERSISTENCE_THRESHOLD,
-                file = f,
+                dataset=d,
+                pland_area=pland_area_dim0,
+                dim=0,
+                threshold=CONFIG.PERSISTENCE_THRESHOLD,
+                file=f,
             ),
         )
         push!(
             land_areas,
             (
-                dataset = d,
-                pland_area = pland_area_dim1,
-                dim = 1,
-                threshold = CONFIG.PERSISTENCE_THRESHOLD,
-                file = f,
+                dataset=d,
+                pland_area=pland_area_dim1,
+                dim=1,
+                threshold=CONFIG.PERSISTENCE_THRESHOLD,
+                file=f,
             ),
         )
     end
@@ -118,21 +118,21 @@ for (i, f) in enumerate(pseudoart_bw_files_names)
     push!(
         land_areas,
         (
-            dataset = d,
-            pland_area = pland_area_dim0,
-            dim = 0,
-            threshold = CONFIG.PERSISTENCE_THRESHOLD,
-            file = f,
+            dataset=d,
+            pland_area=pland_area_dim0,
+            dim=0,
+            threshold=CONFIG.PERSISTENCE_THRESHOLD,
+            file=f,
         ),
     )
     push!(
         land_areas,
         (
-            dataset = d,
-            pland_area = pland_area_dim1,
-            dim = 1,
-            threshold = CONFIG.PERSISTENCE_THRESHOLD,
-            file = f,
+            dataset=d,
+            pland_area=pland_area_dim1,
+            dim=1,
+            threshold=CONFIG.PERSISTENCE_THRESHOLD,
+            file=f,
         ),
     )
 end
