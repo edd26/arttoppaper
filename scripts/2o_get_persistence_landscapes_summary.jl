@@ -15,6 +15,7 @@ using Ripserer
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
 
+"ExtendedDatasetUtils.jl" |> srcdir |> include
 # ===-===-
 import .CONFIG:
     preproc_img_dir_set,
