@@ -272,7 +272,9 @@ for name in files_names
             persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"],
             custom_colors = custom_colors,
         )
-        push!(pland_max_vals, max_colour_range)
+        if !isnan(max_colour_range)
+            push!(pland_max_vals, max_colour_range)
+        end
     end
 
     for k = 1:2
@@ -297,7 +299,7 @@ for name in files_names
         end
         Colorbar(
             fgl[1, k+1], # +1 for the lable on the left
-            limits = (0, pland_max_vals[k]),
+            limits = (0, max(1, pland_max_vals[k])),
             ticks = 0:tick_step:pland_max_vals[k],
             ticklabelrotation = pi / 4,
             tickformat = yticks_formatter,
