@@ -30,6 +30,32 @@ function load_landscape(
     return produced_landscapes["ripserer_landsacpes"]
 end #file
 
+function load_bd_data(
+    loading_name::String,
+    dataset::String;
+    alg = :homology,
+    reps = true,
+    cutoff = 5,
+)
+    # ===-===-
+    # Get cycles and their persistence
+    homology_config = @dict alg reps cutoff
+
+    produced_landscapes, p = produce_or_load(
+        ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
+        homology_config, # config
+        prefix = "homology_info", # file prefix
+        force = false, # force computations
+    ) do homology_config
+        ErrorException("This should have been run in the loop above, terminating") |> throw
+    end # produce_or_load
+
+    births_dict, deaths_dict =
+        produced_landscapes["ripserer_births"], produced_landscapes["ripserer_deaths"]
+
+    return births_dict, deaths_dict
+end #file
+
 
 function get_landscapes_sum(landscapes_names, dataset::String; selected_dim = "dim0")
     if length(landscapes_names) == 1
