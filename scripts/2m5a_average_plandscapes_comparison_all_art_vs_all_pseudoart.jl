@@ -90,9 +90,9 @@ avg_pland_all_pseudo_dim0 = landscape_data["all_pseudoart"]["dim0"] / 4500
 avg_pland_all_pseudo_dim1 = landscape_data["all_pseudoart"]["dim1"] / 4500
 
 avg_pland_all_artist_dim0 =
-    reduce(+, [landscape_data[d]["dim0"] for d in artists_datasets]) / sum(values(total_img_per_artist))
+    reduce(+, [landscape_data[d]["dim0"] for d in artists_datasets]) / sum([v for (k, v) in total_img_per_artist])
 avg_pland_all_artist_dim1 =
-    reduce(+, [landscape_data[d]["dim1"] for d in artists_datasets]) / sum(values(total_img_per_artist))
+    reduce(+, [landscape_data[d]["dim1"] for d in artists_datasets]) / sum([v for (k, v) in total_img_per_artist])
 
 land_vec = [
     avg_pland_all_pseudo_dim0,
