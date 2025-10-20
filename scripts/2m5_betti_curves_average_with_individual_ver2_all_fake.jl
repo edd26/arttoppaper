@@ -41,14 +41,16 @@ extension = ".jpg"
 # ===-===-===-
 # for d in artists_datasets
 
-artists_datasets =
-    set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
-artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
+# artists_datasets =
+# set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
+#     set2 = ["art", "pseudoart"]
+# artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
 total_img_per_artist = Dict()
 
 alg = :homology
 reps = true
 cutoff = PERSISTENCE_THRESHOLD
+force_computations = false
 
 @sync for dataset in set2
 

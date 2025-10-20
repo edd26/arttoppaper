@@ -1,8 +1,17 @@
 using PlotUtils
 
 artists_datasets =
-    set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
-artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
+    set2 = [
+        "Jarema",
+        "Malewicz",
+        "Pollock",
+        "Kandinsky",
+        "Richter",
+        "Rothko",
+        "art",
+        "pseudoart",
+    ]
+# artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
 
 ripserer_landscapes_dir(args...) =
     datadir("exp_pro", "ripserer_computations", "ripserer-landscapes", args...)
