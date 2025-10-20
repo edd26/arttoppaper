@@ -168,5 +168,24 @@ out_name1 = plot_2oa_dir(
 )
 safesave(out_name1, f4)
 
+
+joined_keys = lowercase(DATA_CONFIG) * "_" * join(artists_datasets, "-") * "-all_pseudoart"
+out_name0 = plot_2oa_dir(
+    DATA_CONFIG,
+    joined_keys,
+    "final_f4",
+    "lanscape-area-difference_histogram_thr=$(PERSISTENCE_THRESHOLD).png",
+)
+safesave(out_name0, f4_final)
+out_name1 = plot_2oa_dir(
+    DATA_CONFIG,
+    joined_keys,
+    "pdf",
+    "final_f4",
+    "lanscape-area-difference_histogram_thr=$(PERSISTENCE_THRESHOLD).pdf",
+)
+safesave(out_name1, f4_final)
+
+
 ## ===-===-
 do_nothing = "ok"
