@@ -128,3 +128,148 @@ plt_atributes = Dict(
     "net7" => (m = :circle, c = net_palette2[8]),
     "net8" => (m = :circle, c = net_palette2[end]),
 )
+
+function get_boxplots_and_violins_plot(
+    data1,
+    data2,
+    f,
+    fgl::GridLayout,
+    all_datasets;
+    leged_title="",
+    ylabel="",
+    y_low=0.0,
+    y_high=2.0,
+)
+    plot_labels = if length(all_datasets) == 2
+        ["Art", "Pseudo-art"]
+    else
+        ["All Art", "All Pseudo-art"]
+    end
+
+    measure_vals_both = [data1, data2]
+    color_palette = cgrad(:heat, 3, categorical=true)[2:end]
+    color_values =
+        reduce(vcat, [[color_palette[k] for _ in measure_vals_both[k]] for k = 1:2])
+
+    categories = []
+    color_indices = []
+    for (k, vec) in measure_vals_both |> enumerate
+        push!(categories, [k for v in vec])
+        push!(color_indices, [color_values[k] for v in vec])
+    end
+    categories = vcat(categories...)
+    color_indices = vcat(color_indices...)
+
+    values = vcat(measure_vals_both...)
+    bracket_y = 0.8 * y_high
+    ax_boxplot = CairoMakie.Axis(fgl[1, 1], xtrimspine=true, ytrimspine=true, ylabel=ylabel)
+    ax_estimate = CairoMakie.Axis(fgl[1, 2])
+
+    hidexdecorations!(
+        ax_boxplot,
+        label=false,
+        ticklabels=false,
+        ticks=false,
+        grid=true,
+        minorgrid=true,
+        minorticks=true,
+    )
+
+    for ax in [ax_boxplot]
+        ax.rightspinevisible = false
+        ax.topspinevisible = false
+    end
+    # ax_boxplot.leftspinevisible = false
+
+    hidespines!(ax_estimate)
+    hidedecorations!(ax_estimate)
+
+    # ==
+    CairoMakie.boxplot!(
+        ax_boxplot,
+        categories,
+        values,
+        whiskerwidth=0.5,
+        strokecolor=:black,
+        strokewidth=1,
+        color=color_values,
+    )
+
+    violin_kwargs = (side=:right, strokecolor=:black, strokewidth=1)
+    violin_alpha = 0.5
+    for (k, values_vec) in enumerate(measure_vals_both)
+        if length(measure_vals_both) > 2
+            category_x_vals = [color_values[k] for m in values_vec]
+        else
+            category_x_vals = [1 for m in values_vec]
+        end
+        not_nan_positions2 = findall(x -> !isnan(x), values_vec)
+        category_colour = [color_values[categories.==k]][1]
+        if length(values_vec) > 0
+            CairoMakie.violin!(
+                ax_estimate,
+                category_x_vals[not_nan_positions2],
+                values_vec[not_nan_positions2];
+                color=(category_colour[k], violin_alpha),
+                violin_kwargs...,
+            )
+        end
+    end
+
+    elements = [PolyElement(polycolor=color_palette[i]) for i = 1:length(plot_labels)]
+
+    fgl3 = GridLayout(f[2, :])
+    legend_title = leged_title
+
+    i = 1
+    l1 = Legend(
+        fgl3[1, i],
+        elements[:, i],
+        plot_labels,
+        legend_title,
+        tellwidth=false,
+        nbanks=2,
+        tellheight=true,
+        framevisible=false,
+    )
+    if length(all_datasets) > 2
+        art_description =
+            "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
+        Label(fgl3[2, :], art_description, tellwidth=false)
+    end
+    ##
+    xtick_start = 1
+    xtick_end = 2
+    ax_boxplot.xticks = ([xtick_start, xtick_end], plot_labels)
+
+    for ax in [ax_boxplot, ax_estimate]
+        CairoMakie.ylims!(ax, low=y_low, high=y_high)
+    end
+
+    stat_test_result = MannWhitneyUTest(data1, data2)
+    if pvalue(stat_test_result) < 0.05
+        if pvalue(stat_test_result) < 0.001
+            p_marker = "***"
+        elseif pvalue(stat_test_result) < 0.01
+            p_marker = "**"
+        elseif pvalue(stat_test_result) < 0.05
+            p_marker = "*"
+        end#
+        CairoMakie.bracket!(
+            ax_boxplot,
+            xtick_start,
+            bracket_y,
+            xtick_end,
+            bracket_y,
+            offset=0,
+            text=p_marker,
+            style=:square,
+            fontsize=30,
+            textoffset=-1,
+        )
+    else
+        p_marker = ""
+    end # p-plot
+
+    return f2, l1
+end
