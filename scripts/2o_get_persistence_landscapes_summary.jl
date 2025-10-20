@@ -35,15 +35,18 @@ landscapes_dir(args...) =
 
 ## ===-===-===-===-===-===-===-===-===-===-
 land_areas = DataFrame(
-    dataset=String[],
-    pland_area=Float64[],
-    dim=Int[],
-    threshold=Float64[],
-    file=String[],
+    dataset = String[],
+    pland_area = Float64[],
+    dim = Int[],
+    threshold = Float64[],
+    file = String[],
 )
 
+
+all_datasets = vcat("all_pseudoart", "art", artists_datasets)
+
 # TODO missing here, but in 2m5, (artists_datasets, load_landscape)
-for d in artists_datasets
+for d in all_datasets
     @info "Working on $(d)..."
 
     simple_img_dir(args...) =
@@ -55,27 +58,37 @@ for d in artists_datasets
 
     for f in artist_bw_files_names
         landscapes = load_landscape(f, d)
-        pland_area_dim0 = landscapes["dim0"] |> computeIntegralOfLandscape
-        pland_area_dim1 = landscapes["dim1"] |> computeIntegralOfLandscape
+        # pland_area_dim0 = landscapes["dim0"] |> computeIntegralOfLandscape
+        # pland_area_dim1 = landscapes["dim1"] |> computeIntegralOfLandscape
+        pland_area_dim0 = if isempty(landscapes["dim0"].land)
+            0
+        else
+            landscapes["dim0"] |> computeIntegralOfLandscape
+        end
+        pland_area_dim1 = if isempty(landscapes["dim1"].land)
+            0
+        else
+            landscapes["dim1"] |> computeIntegralOfLandscape
+        end
 
         push!(
             land_areas,
             (
-                dataset=d,
-                pland_area=pland_area_dim0,
-                dim=0,
-                threshold=CONFIG.PERSISTENCE_THRESHOLD,
-                file=f,
+                dataset = d,
+                pland_area = pland_area_dim0,
+                dim = 0,
+                threshold = CONFIG.PERSISTENCE_THRESHOLD,
+                file = f,
             ),
         )
         push!(
             land_areas,
             (
-                dataset=d,
-                pland_area=pland_area_dim1,
-                dim=1,
-                threshold=CONFIG.PERSISTENCE_THRESHOLD,
-                file=f,
+                dataset = d,
+                pland_area = pland_area_dim1,
+                dim = 1,
+                threshold = CONFIG.PERSISTENCE_THRESHOLD,
+                file = f,
             ),
         )
     end
@@ -83,59 +96,59 @@ end
 
 # ===-
 # All pseudoart
-#
+# #
 
-d = "all_pseudoart"
-@info "Working on $(d)..."
+# d = "all_pseudoart"
+# @info "Working on $(d)..."
 
-simple_img_dir(args...) =
-    datadir("exp_pro", "img_initial_preprocessing", CONFIG.DATA_CONFIG, d, args...)
+# simple_img_dir(args...) =
+#     datadir("exp_pro", "img_initial_preprocessing", CONFIG.DATA_CONFIG, d, args...)
 
-files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
-files_list = filter(x -> occursin(CONFIG.DATA_CONFIG, x), files_list)
-pseudoart_bw_files_names = @pipe files_list |> ["$(k[1])" for k in split.(_, ".")]
+# files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
+# files_list = filter(x -> occursin(CONFIG.DATA_CONFIG, x), files_list)
+# pseudoart_bw_files_names = @pipe files_list |> ["$(k[1])" for k in split.(_, ".")]
 
-f = pseudoart_bw_files_names[1]
-for (i, f) in enumerate(pseudoart_bw_files_names)
+# f = pseudoart_bw_files_names[1]
+# for (i, f) in enumerate(pseudoart_bw_files_names)
 
-    if i % 100 == 0
-        @info f
-    end
+#     if i % 100 == 0
+#         @info f
+#     end
 
-    landscapes = load_landscape(f, d)
+#     landscapes = load_landscape(f, d)
 
-    pland_area_dim0 = if isempty(landscapes["dim0"].land)
-        0
-    else
-        landscapes["dim0"] |> computeIntegralOfLandscape
-    end
-    pland_area_dim1 = if isempty(landscapes["dim1"].land)
-        0
-    else
-        landscapes["dim1"] |> computeIntegralOfLandscape
-    end
+#     pland_area_dim0 = if isempty(landscapes["dim0"].land)
+#         0
+#     else
+#         landscapes["dim0"] |> computeIntegralOfLandscape
+#     end
+#     pland_area_dim1 = if isempty(landscapes["dim1"].land)
+#         0
+#     else
+#         landscapes["dim1"] |> computeIntegralOfLandscape
+#     end
 
-    push!(
-        land_areas,
-        (
-            dataset=d,
-            pland_area=pland_area_dim0,
-            dim=0,
-            threshold=CONFIG.PERSISTENCE_THRESHOLD,
-            file=f,
-        ),
-    )
-    push!(
-        land_areas,
-        (
-            dataset=d,
-            pland_area=pland_area_dim1,
-            dim=1,
-            threshold=CONFIG.PERSISTENCE_THRESHOLD,
-            file=f,
-        ),
-    )
-end
+#     push!(
+#         land_areas,
+#         (
+#             dataset = d,
+#             pland_area = pland_area_dim0,
+#             dim = 0,
+#             threshold = CONFIG.PERSISTENCE_THRESHOLD,
+#             file = f,
+#         ),
+#     )
+#     push!(
+#         land_areas,
+#         (
+#             dataset = d,
+#             pland_area = pland_area_dim1,
+#             dim = 1,
+#             threshold = CONFIG.PERSISTENCE_THRESHOLD,
+#             file = f,
+#         ),
+#     )
+# end
 
 ## ===-===-
 do_nothing = "ok"
