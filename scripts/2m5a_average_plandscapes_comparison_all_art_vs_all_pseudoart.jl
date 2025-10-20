@@ -274,7 +274,7 @@ display(f1)
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 @info "Saving..."
-scriptprefix = "2m5"
+scriptprefix = "2m5a"
 script_subname = "average_landscapes_pseudo_vs_art"
 plot_2m5_dir(args...) = plotsdir("section2", scriptprefix * "-$(script_subname)", args...)
 
