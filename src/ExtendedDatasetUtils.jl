@@ -1,4 +1,6 @@
 using PlotUtils
+using HypothesisTests: MannWhitneyUTest, LeveneTest
+using Printf
 
 artists_datasets =
     set2 = [
@@ -135,10 +137,11 @@ function get_boxplots_and_violins_plot(
     f,
     fgl::GridLayout,
     all_datasets;
-    leged_title="",
-    ylabel="",
-    y_low=0.0,
-    y_high=2.0,
+    leged_title = "",
+    ylabel = "",
+    y_low = 0.0,
+    y_high = 2.0,
+    selected_test = MannWhitneyUTest,
 )
     plot_labels = if length(all_datasets) == 2
         ["Art", "Pseudo-art"]
@@ -219,11 +222,12 @@ function get_boxplots_and_violins_plot(
     elements = [PolyElement(polycolor=color_palette[i]) for i = 1:length(plot_labels)]
 
     fgl3 = GridLayout(f[2, :])
+    fgl3_row_index = 1
     legend_title = leged_title
 
     i = 1
     l1 = Legend(
-        fgl3[1, i],
+        fgl3[fgl3_row_index, i],
         elements[:, i],
         plot_labels,
         legend_title,
@@ -232,12 +236,8 @@ function get_boxplots_and_violins_plot(
         tellheight=true,
         framevisible=false,
     )
-    if length(all_datasets) > 2
-        art_description =
-            "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
-        Label(fgl3[2, :], art_description, tellwidth=false)
-    end
     ##
+    fgl3_row_index += 1
     xtick_start = 1
     xtick_end = 2
     ax_boxplot.xticks = ([xtick_start, xtick_end], plot_labels)
@@ -246,8 +246,8 @@ function get_boxplots_and_violins_plot(
         CairoMakie.ylims!(ax, low=y_low, high=y_high)
     end
 
-    stat_test_result = MannWhitneyUTest(data1, data2)
-    if pvalue(stat_test_result) < 0.05
+    stat_test_result = selected_test(data1, data2)
+    if pvalue(stat_test_result) <= 0.05
         if pvalue(stat_test_result) < 0.001
             p_marker = "***"
         elseif pvalue(stat_test_result) < 0.01
@@ -261,15 +261,27 @@ function get_boxplots_and_violins_plot(
             bracket_y,
             xtick_end,
             bracket_y,
-            offset=0,
-            text=p_marker,
-            style=:square,
-            fontsize=30,
-            textoffset=-1,
+            offset = 0,
+            text = p_marker,
+            style = :square,
+            fontsize = 30,
+            textoffset = -1,
         )
+
     else
         p_marker = ""
     end # p-plot
 
-    return f2, l1
+
+    description = "$(selected_test), p-value: " * (@printf "%.3e" pvalue(stat_test_result))
+    Label(fgl3[fgl3_row_index, :], description, tellwidth = false)
+    fgl3_row_index += 1
+
+    if length(all_datasets) > 2
+        art_description =
+            "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
+        Label(fgl3[fgl3_row_index, :], art_description, tellwidth = false)
+    end
+
+    return f, l1
 end
