@@ -86,20 +86,9 @@ function mplot_bettis!(ax, bettis_data; colour=:blue, step=:pre)
 end
 
 
-function get_images_labels(data_labels; target_len::Int=10)
+function get_images_labels(data_labels; target_len::Int = 10)
     tick_labels = String[]
-
-    art_names = [art_images_names[parse(Int, just_name)] for just_name in data_labels[1:12]]
-    pseudoart_names = [@pipe names_to_order[just_name] |> pseudoart_images_names[_] for just_name in data_labels[13:end]]
-
-    for (k, l) in art_names |> enumerate
-        @info l
-        while length(l) > target_len
-            l = chop(l)
-        end
-        push!(tick_labels, "$(k): " * l * "...")
-    end
-    for (k, l) in pseudoart_names |> enumerate
+    for (k, l) in data_labels |> enumerate
         @info l
         while length(l) > target_len
             l = chop(l)

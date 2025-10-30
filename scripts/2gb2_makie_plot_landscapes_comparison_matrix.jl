@@ -82,7 +82,13 @@ end
 data_labels = [replace.(l, "_$(DATA_CONFIG)" => "") for l in lanscapes_df_dim0.file]
 tick_values = 1:total_landscapes
 
-tick_labels = get_images_labels(data_labels; target_len = 10)
+
+art_names = [art_images_names[parse(Int, just_name)] for just_name in data_labels[1:12]]
+pseudoart_names = [
+    @pipe names_to_order[just_name] |> pseudoart_images_names[_] for
+    just_name in data_labels[13:end]
+]
+tick_labels = get_images_labels(vcat(art_names, pseudoart_names); target_len = 10)
 
 colours_palette = Makie.wong_colors();
 art_colour = colours_palette[3];
