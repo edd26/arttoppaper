@@ -65,6 +65,8 @@ function yticks_formatter(values::Vector{Float64})
         labels = ["$(round(Int, value/1000))k" for value in values]
     elseif max_val > 1000
         labels = ["$(value/1000)k" for value in values]
+    elseif max_val > 99
+        labels = ["0.$(round(Int, value/100))k" for value in values]
     else
         labels = ["$(round(Int,value))" for value in values]
     end
