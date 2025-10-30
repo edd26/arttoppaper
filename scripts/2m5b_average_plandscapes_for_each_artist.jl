@@ -42,14 +42,16 @@ extension = ".jpg"
 land_dim0, land_dim1 =
     map(x -> MyPair[] |> PersistenceBarcodes |> PersistenceLandscape, ["dim0", "dim1"])
 
+selected_datasets =
+    artists_datasets[artists_datasets .!= "pseudoart".&&artists_datasets .!= "art"]
 # Artists
 landscape_data = populate_dict!(
     Dict(),
-    [vcat(set2, "all_pseudoart"), ["dim0", "dim1"]],
+    [selected_datasets, ["dim0", "dim1"]],
     final_structure = OrderedDict(),
 )
 
-for d in artists_datasets
+for d in selected_datasets
     @info "Working on $(d)..."
     for selected_dim in ["dim0", "dim1"]
         @info "\tWorking on $(selected_dim)..."
@@ -73,18 +75,23 @@ for d in artists_datasets
     end
 end
 
-# max([x.second for x in landscape_data[d][selected_dim].land[1]]...) ./12
+land_vec = populate_dict!(
+    Dict(),
+    [
+        selected_datasets,
+        # ["BW", "WB"],
+        ["dim0", "dim1"],
+    ],
+    final_structure = OrderedDict(),
+)
 
-land_vec = []
-total_artists = length(artists_datasets)
-for d in artists_datasets
+total_artists = length(selected_datasets)
+for d in selected_datasets
     for selected_dim in ["dim0", "dim1"]
-        push!(land_vec, landscape_data[d][selected_dim] / sum(total_img_per_artist[d]))
+        land_vec[d][selected_dim] =
+            landscape_data[d][selected_dim] / sum(total_img_per_artist[d])
     end # selected_dim
 end # d
-
-max([x.second for x in land_vec[1].land[1]]...)
-
 
 # ===-===-
 @info "Starting plotting..."
