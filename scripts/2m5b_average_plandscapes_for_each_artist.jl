@@ -16,7 +16,10 @@ import Base.Threads: @spawn, @sync
 
 CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 # ===-===-===-
-"config.jl" |> scriptsdir |> include
+
+"2m5_betti_curves_average_with_individual_ver2_all_fake.jl" |> scriptsdir |> include
+
+# "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
 "DataStructuresUtils.jl" |> srcdir |> include
 "LandscapesPlotting.jl" |> srcdir |> include
