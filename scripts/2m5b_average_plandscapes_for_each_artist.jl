@@ -95,44 +95,15 @@ end # d
 
 # ===-===-
 @info "Starting plotting..."
-total_artists = total_plots = length(artists_datasets)
-plt_height = total_plots * 200
-plt_width = 2 * 400
+points_per_cm = 28.3465 * 1.5
+plt_width = ceil(Int, 20.6 * points_per_cm)
+plt_height = ceil(Int, 26.3 * points_per_cm)
+
 f1 = CairoMakie.Figure(size = (plt_width, plt_height));
 fgl_0 = CairoMakie.GridLayout(f1[1, 1])
-# fgl_0 = CairoMakie.GridLayout(f1[1, 1])
-# fgl_vec = GridLayout[]
-# for (i, d) in enumerate(artists_datasets)
-#     for col = 1:2
-#         push!(fgl_vec, CairoMakie.GridLayout(fgl_0[i, col]))
-#     end
-# end
-fgl1 = CairoMakie.GridLayout(fgl_0[1, 1])
-fgl2 = CairoMakie.GridLayout(fgl_0[1, 2])
-fgl3 = CairoMakie.GridLayout(fgl_0[2, 1])
-fgl4 = CairoMakie.GridLayout(fgl_0[2, 2])
-fgl5 = CairoMakie.GridLayout(fgl_0[3, 1])
-fgl6 = CairoMakie.GridLayout(fgl_0[3, 2])
-fgl7 = CairoMakie.GridLayout(fgl_0[4, 1])
-fgl8 = CairoMakie.GridLayout(fgl_0[4, 2])
-fgl9 = CairoMakie.GridLayout(fgl_0[5, 1])
-fgl10 = CairoMakie.GridLayout(fgl_0[5, 2])
 
-# ax_vec = []
-# fgl_mat = reshape(fgl_vec, (2, total_artists))
-# fgl_vec[1] == fgl_mat[1, 1]
-# fgl_vec[1] == fgl_mat[1, 2]
-# fgl_vec[2] == fgl_mat[2, 1]
-
-# for (i, d) in enumerate(artists_datasets)
-#     fgl_land0 = fgl_mat[1, i]
-#     fgl_land1 = fgl_mat[2, i]
-#     push!(ax_vec, 
-#     CairoMakie.Axis(fgl_vec[1]; title = "$(d), dimension 0", pland_kwargs...)
-#     )
-#     push!(ax_vec, CairoMakie.Axis(fgl_land1, title = "$(d), dimension 1", pland_kwargs...))
-# end
-
+fgl_artists =
+    [d=>CairoMakie.GridLayout(fgl_0[i, 1]) for (i, d) in enumerate(selected_datasets)] |> OrderedDict
 
 pland_kwargs = (
     ylabel = "A.U.",
@@ -143,145 +114,225 @@ pland_kwargs = (
     yticks = 0:25:125,
     xlabel = "Filtration step",
 )
-ax_vec = []
 
-for (d, f_vec) in zip(
-    artists_datasets,
-    [[fgl1, fgl2], [fgl3, fgl4], [fgl5, fgl6], [fgl7, fgl8], [fgl9, fgl10]],
+ax_vec = populate_dict!(
+    Dict(),
+    [selected_datasets, ["dim0", "dim1"]],
+    final_structure = OrderedDict(),
 )
-    push!(
-        ax_vec,
-        CairoMakie.Axis(f_vec[1][1, 1]; title = "$(d), dimension 0", pland_kwargs...),
-    )
-    push!(
-        ax_vec,
-        CairoMakie.Axis(f_vec[2][1, 1]; title = "$(d), dimension 1", pland_kwargs...),
-    )
-end
-
-fgl_vec = [fgl1, fgl2, fgl3, fgl4, fgl5, fgl6, fgl7, fgl8, fgl9, fgl10]
-for ax in ax_vec
-    CairoMakie.ylims!(ax, high = 135)
+for (d, fgl_a) in fgl_artists
+    for (dim_index, sdim) in enumerate(["dim0", "dim1"])
+        ax_vec[d][sdim] =
+            ax = CairoMakie.Axis(
+                fgl_a[1, (dim_index-1)*2+1];
+                title = "$(d), $(replace(sdim, "dim"=>"dim. "))",
+                pland_kwargs...,
+            )
+        CairoMakie.ylims!(ax, high = 135)
+    end
 end
 
 # colours
-colour_vec = repeat([:linear_kgy_5_95_c69_n256, :sun], total_artists)
-colour_vec_fraction = repeat([:seaborn_crest_gradient, :matter], total_artists)
+bottom_colour = Dict("dim0" => :linear_kgy_5_95_c69_n256, "dim1" => :sun)
+top_colour = Dict("dim0" => :seaborn_crest_gradient, "dim1" => :matter)
 
-for (ax, local_fgl, pland, c, cf) in
-    zip(ax_vec, fgl_vec, land_vec, colour_vec, colour_vec_fraction)
-    max_colour_range = size(pland.land, 1)
+total_layers = 5
 
-    custom_colors = if max_colour_range > 100
+selected_dim = "dim0"
+dim_index = 1
+d = selected_datasets[6]
+local_fgl = fgl_artists[d]
 
-        vcat(
-            [RGBf(c) for c in cgrad(cf, 100, categorical = true, rev = true)],
+# for (ax, local_fgl, pland, c, cf) in
+for (d, local_fgl) in fgl_artists
+    # for (local_fgl, pland, c, cf) in zip(fgl_artists, land_vec, colour_vec, colour_vec_fraction)
+    # zip(ax_vec, fgl_vec, land_vec, colour_vec, colour_vec_fraction)
+
+    for (dim_index, selected_dim) in enumerate(["dim0", "dim1"])
+
+        pland = land_vec[d][selected_dim]
+        total_landsacpe_layers = size(pland.land, 1)
+
+        bcolour = bottom_colour[selected_dim]
+        tcolour = top_colour[selected_dim]
+
+        custom_colors = if total_landsacpe_layers > total_layers
+            vcat(
+                vcat(
+                    [
+                        [
+                            RGBf(c) for
+                            c in cgrad(tcolour, 100, categorical = true, rev = true)
+                        ] for _ = 1:total_layers
+                    ]...,
+                ),
+                [
+                    RGBf(c) for c in cgrad(
+                        bcolour,
+                        total_landsacpe_layers - total_layers,
+                        categorical = true,
+                        rev = false,
+                    )
+                ],
+            ) |> Vector{RGB{Float32}}
+
+        else
             [
-                RGBf(c) for
-                c in cgrad(c, max_colour_range - 100, categorical = true, rev = false)
-            ],
+                RGBf(c) for c in cgrad(
+                    bcolour,
+                    max(2, total_landsacpe_layers),
+                    categorical = true,
+                    rev = false,
+                )
+            ]
+        end
+
+        first_layer_index = if selected_dim == "dim0"
+            2
+        else
+            1
+        end
+
+        plot_persistence_landscape!(
+            ax_vec[d][selected_dim],
+            pland,
+            custom_colors = custom_colors,
+            starting_layer = first_layer_index,
         )
 
-    else
-        [RGBf(c) for c in cgrad(c, max(2, max_colour_range), categorical = true, rev = false)]
-    end
+        f1
+        pland_max_vals = total_landsacpe_layers
+        if pland_max_vals < 10
+            tick_step = 4
+        elseif pland_max_vals < 51
+            tick_step = 10
+        elseif pland_max_vals < 100
+            tick_step = 20
+        elseif pland_max_vals < 501
+            tick_step = 100
+        elseif pland_max_vals < 1000
+            tick_step = 200
+        elseif pland_max_vals < 4000
+            tick_step = 500
+        elseif pland_max_vals < 7000
+            tick_step = 1000
+        elseif pland_max_vals < 10000
+            tick_step = 2000
+        elseif pland_max_vals < 13000
+            tick_step = 3000
+        elseif pland_max_vals < 20000
+            tick_step = 4000
+        elseif pland_max_vals < 30000
+            tick_step = 8000
+        elseif pland_max_vals < 60000
+            tick_step = 16000
+        elseif pland_max_vals < 100000
+            tick_step = 20000
+        elseif pland_max_vals < 130000
+            tick_step = 25000
+        elseif pland_max_vals < 160000
+            tick_step = 30000
+        else
+            tick_step = 50000
+        end
+        f1
 
-    first_layer_index = if pland.dimension == 0
-        2
-    else
-        1
-    end
-
-    plot_persistence_landscape!(
-        ax,
-        pland,
-        custom_colors = custom_colors,
-        starting_layer = first_layer_index,
-    )
-    pland_max_vals = max_colour_range
-
-    if pland_max_vals < 10
-        tick_step = 4
-    elseif pland_max_vals < 51
-        tick_step = 10
-    elseif pland_max_vals < 100
-        tick_step = 20
-    elseif pland_max_vals < 501
-        tick_step = 100
-    elseif pland_max_vals < 1000
-        tick_step = 200
-    elseif pland_max_vals < 4000
-        tick_step = 500
-    elseif pland_max_vals < 7000
-        tick_step = 1000
-    elseif pland_max_vals < 13000
-        tick_step = 2000
-    elseif pland_max_vals < 20000
-        tick_step = 4000
-    elseif pland_max_vals < 30000
-        tick_step = 8000
-    elseif pland_max_vals < 60000
-        tick_step = 16000
-    else
-        tick_step = 20000
-    end
-
-    if c == colour_vec_dim0[1]
-        selected_dim = 0
-    else
-        selected_dim = 1
-    end
+        # if c == colour_vec_dim0[1]
+        #     selected_dim = 0
+        # else
+        #     selected_dim = 1
+        # end
 
 
-    if max_colour_range > 100
-        # f = Figure() # << d
-        # local_fgl = GridLayout(f[1, 1])# << d
-        cbar_fgl = CairoMakie.GridLayout(local_fgl[1, 2])
+        cbar_fgl = CairoMakie.GridLayout(local_fgl[1, 2*dim_index], tellwidth = true)
 
-        Colorbar(
-            cbar_fgl[2, 1],
-            limits = (0, 100),
-            ticks = 0:100:100,
-            ticklabelrotation = -pi / 4,
-            labelrotation = -pi / 2,
-            tickformat = yticks_formatter,
-            colormap = cgrad(cf, 100, categorical = true, rev = true),
-            vertical = true,
-            # label="landscape layer",
+        if total_landsacpe_layers > 100
+            # f = Figure() # << d
+            # local_fgl = GridLayout(f[1, 1])# << d
+            cbar_kwargs = (
+                # ticklabelrotation = -pi / 6,
+                # labelrotation = -pi / 2,
+                tickformat = yticks_formatter,
+                colormap = cgrad(tcolour, 100, categorical = true, rev = true),
+                vertical = true,
+                ticklabelsize = 12,
+            )
+
+            range_starts = reverse(0:100:(100*total_layers))
+            range_stops = reverse(100:100:(100*(total_layers+1)))
+            for (k, (r_start, r_stop)) in enumerate(zip(range_starts, range_stops))
+                step = if k==1
+                    100
+                else
+                    101
+                end
+                Colorbar(
+                    cbar_fgl[k+1, 1];
+                    limits = (r_start, r_stop),
+                    ticks = r_start:step:r_stop,
+                    cbar_kwargs...,
+                    # label="landscape layer",
+                )
+            end
+            # f# << d
+
+            bottom_lower_limit = (total_layers * 100 + 1)
+            Colorbar(
+                cbar_fgl[1, 1],
+                limits = (bottom_lower_limit, pland_max_vals),
+                ticks = 0:tick_step:pland_max_vals,
+                # ticklabelrotation = -pi / 6,
+                # labelrotation = -pi / 2,
+                tickformat = yticks_formatter,
+                colormap = cgrad(
+                    bcolour,
+                    pland_max_vals - 100,
+                    categorical = true,
+                    rev = false,
+                ),
+                vertical = true,
+                # label = "landscape layer",
+                ticklabelsize = 12,
+            )
+            CairoMakie.rowsize!(cbar_fgl, 1, Relative(1 - 0.50))
+            f1
+            rowgap!(cbar_fgl, 0)
+        else
+            Colorbar(
+                cbar_fgl[1, 1],
+                limits = (0, pland_max_vals),
+                ticks = 0:tick_step:pland_max_vals,
+                # ticklabelrotation = -pi / 4,
+                labelrotation = -pi / 2,
+                tickformat = yticks_formatter,
+                colormap = cgrad(
+                    bcolour,
+                    max(2, pland_max_vals),
+                    categorical = true,
+                    rev = false,
+                ),
+                vertical = true,
+                # label = "landscape layer",
+                ticklabelsize = 12,
+            )
+        end # if
+        Label(
+            cbar_fgl[:, 2],
+            "landscape layer",
+            rotation = -pi / 2,
+            tellheight = false,
+            tellwidth = true,
+            halign = :left,
+            # font = :bold,
         )
-        # f# << d
+        colgap!(cbar_fgl, 5)
 
-        Colorbar(
-            cbar_fgl[1, 1],
-            limits = (101, pland_max_vals),
-            ticks = 101:tick_step:pland_max_vals,
-            ticklabelrotation = -pi / 4,
-            labelrotation = -pi / 2,
-            tickformat = yticks_formatter,
-            colormap = cgrad(c, pland_max_vals - 100, categorical = true, rev = false),
-            vertical = true,
-            label = "landscape layer",
-        )
-        CairoMakie.rowsize!(cbar_fgl, 1, Relative(1 - 0.15))
-        rowgap!(cbar_fgl, 5)
-        # f
-    else
-        Colorbar(
-            local_fgl[1, 2],
-            limits = (0, pland_max_vals),
-            ticks = 0:tick_step:pland_max_vals,
-            ticklabelrotation = -pi / 4,
-            labelrotation = -pi / 2,
-            tickformat = yticks_formatter,
-            colormap = cgrad(c, max(2, pland_max_vals), categorical = true, rev = false),
-            vertical = true,
-            label = "landscape layer",
-        )
-    end
+    end # (dim_index, selected_dim)
 
+    f1
 end
 
-map(x -> hidexdecorations!(x, ticks = false, grid = false), [ax_pland0_gr1, ax_pland0_gr2])
+# map(x -> hidexdecorations!(x, ticks = false, grid = false), [ax_pland0_gr1, ax_pland0_gr2])
 
 colgap!(fgl_0, 10)
 rowgap!(fgl_0, 30)
