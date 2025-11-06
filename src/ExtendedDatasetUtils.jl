@@ -144,11 +144,6 @@ function get_boxplots_and_violins_plot(
     y_high = 2.0,
     selected_test = MannWhitneyUTest,
 )
-    plot_labels = if length(all_datasets) == 2
-        ["Art", "Pseudo-art"]
-    else
-        ["All Art", "All Pseudo-art"]
-    end
 
     measure_vals_both = [data1, data2]
     color_palette = cgrad(:heat, 3, categorical=true)[2:end]
