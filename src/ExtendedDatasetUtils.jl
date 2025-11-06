@@ -138,10 +138,11 @@ function get_boxplots_and_violins_plot(
     f,
     fgl::GridLayout,
     all_datasets;
-    leged_title = "",
-    ylabel = "",
-    y_low = 0.0,
-    y_high = 2.0,
+    leged_title="",
+    ylabel="",
+    plot_labels::Vector{String}=["", ""],
+    y_low=0.0,
+    y_high=2.0,
     selected_test::Function=MannWhitneyUTest,
 )
 
@@ -262,11 +263,11 @@ function get_boxplots_and_violins_plot(
             bracket_y,
             xtick_end,
             bracket_y,
-            offset = 0,
-            text = p_marker,
-            style = :square,
-            fontsize = 30,
-            textoffset = -1,
+            offset=0,
+            text=p_marker,
+            style=:square,
+            fontsize=30,
+            textoffset=-1,
         )
         (p_marker, p_value_str)
     else
