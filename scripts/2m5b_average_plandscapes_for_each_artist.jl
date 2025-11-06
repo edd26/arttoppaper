@@ -57,16 +57,25 @@ for d in selected_datasets
         @info "\tWorking on $(selected_dim)..."
 
         simple_img_dir(args...) =
-            datadir("exp_pro", "img_initial_preprocessing", CONFIG.DATA_CONFIG, d, args...)
+            datadir("exp_pro", "img_initial_preprocessing", "BW", d, args...)
 
         files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
         files_list = filter(x -> occursin(CONFIG.DATA_CONFIG, x), files_list)
         artist_bw_files_names = @pipe files_list |> ["$(k[1])" for k in split.(_, ".")]
 
-        files_selection = if d == "Richter"
-            [f for f in artist_bw_files_names if !occursin("lbbw_ks_richter_claudius_ii", f)]
-        else
+        final_artist_bw_files_names = if selected_config == "BW"
             artist_bw_files_names
+        else
+            replace.(artist_bw_files_names, "BW" => "WB")
+        end
+
+        files_selection = if d == "Richter"
+            [
+                f for f in final_artist_bw_files_names if
+                !occursin("lbbw_ks_richter_claudius_ii", f)
+            ]
+        else
+            final_artist_bw_files_names
         end
 
         landscape_data[d][selected_dim] =

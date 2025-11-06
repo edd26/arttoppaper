@@ -52,16 +52,11 @@ force_computations = false
 
 @sync for dataset in set2
 
-    simple_img_dir(args...) = datadir(
-        "exp_pro",
-        "img_initial_preprocessing",
-        CONFIG.DATA_CONFIG,
-        dataset,
-        args...,
-    )
+    simple_img_dir(args...) =
+        datadir("exp_pro", "img_initial_preprocessing", "BW", dataset, args...)
 
     files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
-    files_list = filter(x -> occursin(CONFIG.DATA_CONFIG, x), files_list)
+    files_list = filter(x -> occursin("BW", x), files_list)
     artist_bw_files_names = @pipe files_list |> [k[1] for k in split.(_, ".")]
     total_img_per_artist[dataset] = length(artist_bw_files_names)
 
