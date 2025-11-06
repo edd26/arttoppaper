@@ -18,8 +18,9 @@ using Pipe
 using HypothesisTests
 
 import Base.Threads: @spawn, @sync
+import Dates: now
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -50,7 +51,7 @@ all_datasets = vcat("all_pseudoart", artists_datasets)
 
 # all_datasets =
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
 
 
 for d in all_datasets
@@ -108,17 +109,17 @@ end # d selected_ config
 # =====
 
 betti_difference_df = DataFrame(
-    dataset = String[],
-    integrated_betti1 = Float64[],
-    integrated_betti2 = Float64[],
-    norm_integrated_betti1 = Float64[],
-    norm_integrated_betti2 = Float64[],
-    config1 = String[],
-    dim1 = String[],
-    config2 = String[],
-    dim2 = String[],
-    difference = Float64[],
-    norm_difference = Float64[],
+    dataset=String[],
+    integrated_betti1=Float64[],
+    integrated_betti2=Float64[],
+    norm_integrated_betti1=Float64[],
+    norm_integrated_betti2=Float64[],
+    config1=String[],
+    dim1=String[],
+    config2=String[],
+    dim2=String[],
+    difference=Float64[],
+    norm_difference=Float64[],
 )
 
 bw = "_BW"
@@ -225,16 +226,28 @@ end #
 ############
 # ===-===-===-===-===-
 
-datasets_combinations = [
-    # artists_datasets,
-    all_datasets[all_datasets .!= "art".&&all_datasets .!= "pseudoart"],
-    all_datasets[all_datasets .!= "pseudoart"],
-    ["art", "pseudoart"],
-]
-non_art_labels_vec = ["all_pseudoart", "all_pseudoart", "pseudoart"]
+datasets_combinations = vcat(
+    [
+        all_datasets[all_datasets.!="art".&&all_datasets.!="pseudoart"],
+        all_datasets[all_datasets.!="pseudoart"],
+        ["art", "pseudoart"],
+        ["art", "all_pseudoart"],
+    ], [
+        [d, "all_pseudoart"] for d in artists_datasets[artists_datasets.!="pseudoart"]
+    ]
+)
+non_art_labels_vec = vcat([
+        "all_pseudoart",
+        "all_pseudoart",
+        "pseudoart",],
+    "all_pseudoart",
+    [
+        "all_pseudoart" for _ in artists_datasets[artists_datasets.!="art".&&artists_datasets.!="pseudoart"]
+    ])
 
 
-k = 3
+
+k = 5
 selected_datasets = datasets_combinations[k]
 non_art_label = ["all_pseudoart", "all_pseudoart", "pseudoart"][k]
 
@@ -247,8 +260,7 @@ do_saving = true
 for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
     @info "selected_first_config = $(selected_first_config)"
     config_filtered_differences_df =
-        filter(row -> row.config1==selected_first_config, betti_difference_df)
-
+        filter(row -> row.config1 == selected_first_config, betti_difference_df)
 
     for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_labels_vec)
         # @info "Selected datasets: " selected_datasets
@@ -264,15 +276,16 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
             filter(row -> row.dataset != non_art_label, filtered_differences_df).norm_difference
 
         title_sufix = @pipe map(
-                  x -> join(x, "_"),
-                  [
-                      [selected_first_config, first_selected_dim],
-                      [selected_second_config, second_selected_dim],
-                  ],
-              ) |>
-              (y -> "area(Betti" .* y .* ")") |>
-              join(_, " - ") |>
-              z -> "(" * z .* ")/average Betti"
+                                x -> join(x, "_"),
+                                [
+                                    [selected_first_config, first_selected_dim],
+                                    [selected_second_config, second_selected_dim],
+                                ],
+                            ) |>
+                            (y -> "area(Betti" .* y .* ")") |>
+                            join(_, " - ") |>
+                            z -> "(" * z .* ")/average Betti"
+
 
         f2 = Figure()
         fgl = CairoMakie.GridLayout(f2[1, 1])
