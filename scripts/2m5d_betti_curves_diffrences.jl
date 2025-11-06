@@ -249,13 +249,16 @@ non_art_labels_vec = vcat([
 
 k = 5
 selected_datasets = datasets_combinations[k]
-non_art_label = ["all_pseudoart", "all_pseudoart", "pseudoart"][k]
+non_art_label = non_art_labels_vec[k]
 
+selected_first_config = bw
+selected_second_config = wb
 first_config = bw
 second_config = wb
 first_selected_dim = "dim0"
 second_selected_dim = "dim1"
 do_saving = true
+
 
 for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
     @info "selected_first_config = $(selected_first_config)"
@@ -287,41 +290,61 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
                             z -> "(" * z .* ")/average Betti"
 
 
+        plot_labels = if length(selected_datasets) == 2
+            if "art" in selected_datasets && "pseudoart" in selected_datasets
+                ["Art (Kot)", "Pseudo-Art (Exhibition)"]
+            elseif "art" in selected_datasets && "all_pseudoart" in selected_datasets
+                ["Art (Kot)", "All Pseudo-Art"]
+            else
+                [selected_datasets[1], "All Pseudo-Art"]
+            end
+        else
+            ["All Art", "All Pseudo-Art"]
+        end
+
         f2 = Figure()
         fgl = CairoMakie.GridLayout(f2[1, 1])
 
-        f, l = get_boxplots_and_violins_plot(
+        # axis_label = L"$\frac{area(\beta^{WB}_{dim-1}) - area(\beta^{BW}_{dim1}) }{ mean ( area(\beta^{WB}_{dim-1}), area(\beta^{BW}_{dim1})) }$.}$"
+        o1 = replace(selected_first_config, "_" => "")
+        o2 = replace(selected_second_config, "_" => "")
+        axis_label = L"\frac{area(\beta^{%$o1}_{dim0}) - area(\beta^{%$o2}_{dim1}) }{ mean ( area(\beta^{%$o1}_{dim0}), area(\beta^{%$o1}_{dim1})) }"
+
+        data1 = artists_differences
+        data2 = pseudoart_differences
+        f, l, stat_test_result = get_boxplots_and_violins_plot(
             artists_differences,
             pseudoart_differences,
             f2,
             fgl,
             selected_datasets;
-            leged_title = replace(title_sufix, "_" => " "),
-            y_low = -0.2,
-            y_high = 2.5,
+            leged_title="",# replace(title_sufix, "_" => " "),
+            y_low=-0.2,
+            y_high=2.5,
+            ylabel=axis_label,
+            plot_labels=plot_labels
+            # selected_test=MannWhitneyUTest
         )
+        display(f)
 
-        f
-
-        # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-        @info "Saving..."
-        scriptprefix = "2m5d"
-        script_subname = "histograms_betti_area_difference"
-        plot_2m5_dir(args...) =
-            plotsdir("section2", scriptprefix * "-$(script_subname)", args...)
-
-        # ===-===-===-
+        io = IOBuffer()
+        println(io, "===-===-===-===-===-===-===-===-===-===-===-===-===-===-")
+        println(io, now())
+        println(io, "Datasets: ", plot_labels)
+        println(io, "")
+        println(io, stat_test_result)
+        println(io, "")
 
         joined_keys = join(selected_datasets, "-")
         version =
             "normalised_" *
-            split(replace(replace(replace(title_sufix, " "=>"_"), "("=>""), ")"=>""), "/")[1]
+            split(replace(replace(replace(title_sufix, " " => "_"), "(" => ""), ")" => ""), "/")[1]
         out_img_name = "$(version)_$(joined_keys)"
-        thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
+        logfile = log_2m5d_dir(out_img_name * ".txt")
+        open(logfile, "a") do fio
+            write(fio, String(take!(io)))
+        end
 
-        out_name =
-            plot_2m5_dir("$(selected_config)_$(thr)_$(version)", out_img_name * ".png")
-        safesave(out_name, f, dpi = 300)
         # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
         if do_saving
             @info "Saving..."
