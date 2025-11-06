@@ -32,6 +32,13 @@ CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 # import .CONFIG: preproc_img_dir_set, SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_CONFIG
 # import .CONFIG: ripserer_computations_dir
 
+scriptprefix = "2m5d"
+script_subname = "histograms_betti_area_difference"
+plot_2m5_dir(args...) = plotsdir("section2", scriptprefix * "-$(script_subname)", args...)
+
+log_2m5d_dir(args...) = projectdir("log", "section2", "$(scriptprefix)-$(script_subname)", args...)
+log_2m5d_dir() |> ispath || log_2m5d_dir() |> mkpath
+
 @info "Arguments processed."
 # ====================================================
 all_x_values = 0:255
@@ -152,7 +159,6 @@ for d in all_datasets
         norm_integrated_betti2 = sum(β2) / mean([integrated_betti1, integrated_betti2])
 
         betti_difference = integrated_betti1 - integrated_betti2
-        betti_difference = integrated_betti1 - integrated_betti2
         norm_betti_difference =
             betti_difference / mean([integrated_betti1, integrated_betti2])
 
@@ -236,6 +242,7 @@ first_config = bw
 second_config = wb
 first_selected_dim = "dim0"
 second_selected_dim = "dim1"
+do_saving = true
 
 for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
     @info "selected_first_config = $(selected_first_config)"
@@ -302,15 +309,29 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
         out_name =
             plot_2m5_dir("$(selected_config)_$(thr)_$(version)", out_img_name * ".png")
         safesave(out_name, f, dpi = 300)
+        # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+        if do_saving
+            @info "Saving..."
 
-        out_name = plot_2m5_dir(
-            "$(selected_config)_$(thr)_$(version)",
-            "pdf",
-            out_img_name * ".pdf",
-        )
-        safesave(out_name, f, dpi = 300)
+            # ===-===-===-
+
+            out_img_name = "$(version)_$(joined_keys)"
+            thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
+
+            out_name =
+                plot_2m5_dir("$(thr)_$(version)", out_img_name * ".png")
+            safesave(out_name, f, dpi=300)
+
+            out_name = plot_2m5_dir(
+                "$(thr)_$(version)",
+                "pdf",
+                out_img_name * ".pdf",
+            )
+            safesave(out_name, f, dpi=300)
+        end
 
     end # selected_dataset 
 end # selected_first_config
+
 ## ===-===-
 do_nothing = "ok"
