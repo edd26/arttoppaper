@@ -430,3 +430,4 @@ dipha/full_to_sparse_distance_matrix
 *.python-version
 
 papers/*
+log
