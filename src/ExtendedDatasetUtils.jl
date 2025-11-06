@@ -142,7 +142,7 @@ function get_boxplots_and_violins_plot(
     ylabel = "",
     y_low = 0.0,
     y_high = 2.0,
-    selected_test = MannWhitneyUTest,
+    selected_test::Function=MannWhitneyUTest,
 )
 
     measure_vals_both = [data1, data2]
@@ -244,14 +244,18 @@ function get_boxplots_and_violins_plot(
     end
 
     stat_test_result = selected_test(data1, data2)
-    if pvalue(stat_test_result) <= 0.05
-        if pvalue(stat_test_result) < 0.001
-            p_marker = "***"
-        elseif pvalue(stat_test_result) < 0.01
-            p_marker = "**"
-        elseif pvalue(stat_test_result) < 0.05
-            p_marker = "*"
-        end#
+    @info stat_test_result
+    (p_marker, p_value_str) = if pvalue(stat_test_result) <= 0.05
+        (p_marker, p_value_str) =
+            if pvalue(stat_test_result) < 0.001
+                ("***", "p<0.001")
+            elseif pvalue(stat_test_result) < 0.01
+                ("**", "p<0.01")
+            elseif pvalue(stat_test_result) < 0.05
+                ("*", "p<0.05")
+            else
+                "Adding star in distribution plot: This shouldn't have happened" |> ErrorException |> throw
+            end#
         CairoMakie.bracket!(
             ax_boxplot,
             xtick_start,
@@ -264,21 +268,25 @@ function get_boxplots_and_violins_plot(
             fontsize = 30,
             textoffset = -1,
         )
-
+        (p_marker, p_value_str)
     else
-        p_marker = ""
+        ("", "")
     end # p-plot
 
-
-    description = "$(selected_test), p-value: " * (@printf "%.3e" pvalue(stat_test_result))
-    Label(fgl3[fgl3_row_index, :], description, tellwidth = false)
+    p_value_truncated = if p_value_str == ""
+        (@sprintf "%.3f" pvalue(stat_test_result))
+    else
+        p_value_str
+    end
+    description = "$(selected_test), p-value: " * p_value_truncated
+    Label(fgl3[fgl3_row_index, :], description, tellwidth=false)
     fgl3_row_index += 1
 
     if length(all_datasets) > 2
         art_description =
             "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
-        Label(fgl3[fgl3_row_index, :], art_description, tellwidth = false)
+        Label(fgl3[fgl3_row_index, :], art_description, tellwidth=false)
     end
 
-    return f, l1
+    return f, l1, stat_test_result
 end
