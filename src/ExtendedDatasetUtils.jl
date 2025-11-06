@@ -99,7 +99,8 @@ function get_landscapes_sum(landscapes_names, dataset::String; selected_dim="dim
         )
 
     else
-        ErrorException("this is not handeled, throwing error") |> throw
+        ErrorException("In landscapes sum, an unhandeled error occured, throwing it") |>
+        throw
     end
 end
 
