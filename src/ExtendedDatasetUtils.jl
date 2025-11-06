@@ -22,9 +22,9 @@ ripserer_landscapes_dir(args...) =
 function load_landscape(
     loading_name::String,
     dataset::String;
-    alg = :homology,
-    reps = true,
-    cutoff = 5,
+    alg=:homology,
+    reps=true,
+    cutoff=5,
 )
     # ===-===-
     # Get cycles and their persistence
@@ -33,8 +33,8 @@ function load_landscape(
     produced_landscapes, p = produce_or_load(
         ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
         homology_config, # config
-        prefix = "homology_info", # file prefix
-        force = false, # force computations
+        prefix="homology_info", # file prefix
+        force=false, # force computations
     ) do homology_config
         ErrorException("This should have been run in the loop above, terminating") |> throw
     end # produce_or_load
@@ -44,9 +44,9 @@ end #file
 function load_bd_data(
     loading_name::String,
     dataset::String;
-    alg = :homology,
-    reps = true,
-    cutoff = 5,
+    alg=:homology,
+    reps=true,
+    cutoff=5,
 )
     # ===-===-
     # Get cycles and their persistence
@@ -55,8 +55,8 @@ function load_bd_data(
     produced_landscapes, p = produce_or_load(
         ripserer_landscapes_dir(dataset, "image_$(replace(loading_name, ".jpg"=>""))"), # path
         homology_config, # config
-        prefix = "homology_info", # file prefix
-        force = false, # force computations
+        prefix="homology_info", # file prefix
+        force=false, # force computations
     ) do homology_config
         ErrorException("This should have been run in the loop above, terminating") |> throw
     end # produce_or_load
@@ -68,7 +68,7 @@ function load_bd_data(
 end #file
 
 
-function get_landscapes_sum(landscapes_names, dataset::String; selected_dim = "dim0")
+function get_landscapes_sum(landscapes_names, dataset::String; selected_dim="dim0")
     if length(landscapes_names) == 1
         # @info "len==1" landscapes_names
 
@@ -91,11 +91,11 @@ function get_landscapes_sum(landscapes_names, dataset::String; selected_dim = "d
         return get_landscapes_sum(
             landscapes_names[range1],
             dataset,
-            selected_dim = selected_dim,
+            selected_dim=selected_dim,
         ) + get_landscapes_sum(
             landscapes_names[range2],
             dataset,
-            selected_dim = selected_dim,
+            selected_dim=selected_dim,
         )
 
     else
@@ -109,26 +109,26 @@ net_palette = PlotUtils.palette(:YlOrRd_9, 9);
 net_palette2 = PlotUtils.palette(:Set1_9, 10);
 
 plt_atributes = Dict(
-    "art" => (m = :star6, c = my_palette[6]),
-    "pseudoart" => (m = :star4, c = my_palette[9]),
-    "Kandinsky" => (m = :pentagon, c = my_palette[2]),
-    "textures" => (m = :utriangle, c = my_palette[10]),
-    "Pollock" => (m = :diamond, c = net_palette2[1]),
-    "Rothko" => (m = :star5, c = net_palette2[2]),
-    "Mark" => (m = :xcross, c = net_palette2[1]),
-    "Jarema" => (m = :star6, c = net_palette2[3]),
-    "Malewicz" => (m = :star8, c = net_palette2[4]),
-    "Richter" => (m = :dtriangle, c = net_palette2[4]),
-    "all_pseudoart" => (m = :hexagon, c = my_palette[7]),
-    "net0" => (m = :circle, c = net_palette[1]),
-    "net1" => (m = :circle, c = net_palette[2]),
-    "net2" => (m = :circle, c = net_palette[3]),
-    "net3" => (m = :circle, c = net_palette[4]),
-    "net4" => (m = :circle, c = net_palette[5]),
-    "net5" => (m = :circle, c = net_palette[6]),
-    "net6" => (m = :circle, c = net_palette2[7]),
-    "net7" => (m = :circle, c = net_palette2[8]),
-    "net8" => (m = :circle, c = net_palette2[end]),
+    "art" => (m=:star6, c=my_palette[6]),
+    "pseudoart" => (m=:star4, c=my_palette[9]),
+    "Kandinsky" => (m=:pentagon, c=my_palette[2]),
+    "textures" => (m=:utriangle, c=my_palette[10]),
+    "Pollock" => (m=:diamond, c=net_palette2[1]),
+    "Rothko" => (m=:star5, c=net_palette2[2]),
+    "Mark" => (m=:xcross, c=net_palette2[1]),
+    "Jarema" => (m=:star6, c=net_palette2[3]),
+    "Malewicz" => (m=:star8, c=net_palette2[4]),
+    "Richter" => (m=:dtriangle, c=net_palette2[4]),
+    "all_pseudoart" => (m=:hexagon, c=my_palette[7]),
+    "net0" => (m=:circle, c=net_palette[1]),
+    "net1" => (m=:circle, c=net_palette[2]),
+    "net2" => (m=:circle, c=net_palette[3]),
+    "net3" => (m=:circle, c=net_palette[4]),
+    "net4" => (m=:circle, c=net_palette[5]),
+    "net5" => (m=:circle, c=net_palette[6]),
+    "net6" => (m=:circle, c=net_palette2[7]),
+    "net7" => (m=:circle, c=net_palette2[8]),
+    "net8" => (m=:circle, c=net_palette2[end]),
 )
 
 function get_boxplots_and_violins_plot(
@@ -165,7 +165,8 @@ function get_boxplots_and_violins_plot(
 
     values = vcat(measure_vals_both...)
     bracket_y = 0.8 * y_high
-    ax_boxplot = CairoMakie.Axis(fgl[1, 1], xtrimspine=true, ytrimspine=true, ylabel=ylabel)
+    ax_boxplot =
+        CairoMakie.Axis(fgl[1, 1], xtrimspine=true, ytrimspine=true, ylabel=ylabel)
     ax_estimate = CairoMakie.Axis(fgl[1, 2])
 
     hidexdecorations!(

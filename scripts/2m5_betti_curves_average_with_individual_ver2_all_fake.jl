@@ -14,7 +14,7 @@ using Ripserer
 
 import Base.Threads: @spawn, @sync
 
-CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
+CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -95,16 +95,16 @@ force_computations = false
                     "image_$(replace(loading_name, ".jpg"=>""))",
                 ), # path
                 homology_config, # config
-                prefix="homology_info", # file prefix
-                force=force_computations, # force computations
+                prefix = "homology_info", # file prefix
+                force = force_computations, # force computations
             ) do homology_config
                 @unpack alg, reps, cutoff, input_img = homology_config
                 println("\tStarting homology computations...")
                 homolgy_result = ripserer(
                     Cubical(input_img),
-                    cutoff=cutoff,
-                    reps=reps,
-                    alg=alg,
+                    cutoff = cutoff,
+                    reps = reps,
+                    alg = alg,
                 )
                 println("\tFinished homology computations. ")
 
@@ -184,16 +184,16 @@ if force_computations == true
                         "image_$(replace(loading_name, ".jpg"=>""))",
                     ), # path
                     homology_config, # config
-                    prefix="homology_info", # file prefix
-                    force=force_computations, # force computations
+                    prefix = "homology_info", # file prefix
+                    force = force_computations, # force computations
                 ) do homology_config
                     @unpack alg, reps, cutoff, input_img = homology_config
                     println("\tStarting homology computations...")
                     homolgy_result = ripserer(
                         Cubical(input_img),
-                        cutoff=cutoff,
-                        reps=reps,
-                        alg=alg,
+                        cutoff = cutoff,
+                        reps = reps,
+                        alg = alg,
                     )
                     println("\tFinished homology computations. ")
 

@@ -21,7 +21,7 @@ using MakieExtra
 
 import Base.Threads: @spawn, @sync
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -45,7 +45,7 @@ all_datasets = vcat("all_pseudoart", artists_datasets)
 
 # all_datasets =
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
 
 
 for d in all_datasets
@@ -96,7 +96,7 @@ for d in all_datasets
                 # ===-===-
                 bettis = Dict(:x => x_range, :y => betticurve)
                 resampled_betti = zeros(Int, length(all_x_values))
-                resampled_betti[bettis[:x] .+ 1] .= bettis[:y]
+                resampled_betti[bettis[:x].+1] .= bettis[:y]
 
                 for x in all_x_index[2:end]
                     if resampled_betti[x] == 0
@@ -117,8 +117,8 @@ end # d selected_ config
 
 datasets_combinations = [
     # artists_datasets,
-    all_datasets[all_datasets .!= "art".&&all_datasets .!= "pseudoart"],
-    all_datasets[all_datasets .!= "pseudoart"],
+    all_datasets[all_datasets.!="art".&&all_datasets.!="pseudoart"],
+    all_datasets[all_datasets.!="pseudoart"],
     ["art", "pseudoart"],
 ]
 art_labels_vec = ["all_art", "all_art", "art"]
@@ -130,17 +130,17 @@ non_art_labels_vec = ["all_pseudoart", "all_pseudoart", "pseudoart"]
 average_bettis = populate_dict!(
     Dict(),
     [all_datasets, ["BW", "WB"], ["dim0", "dim1"]],
-    final_structure = zeros(1, length(all_x_index)),
+    final_structure=zeros(1, length(all_x_index)),
 )
 median_bettis = populate_dict!(
     Dict(),
     [all_datasets, ["BW", "WB"], ["dim0", "dim1"]],
-    final_structure = zeros(1, length(all_x_index)),
+    final_structure=zeros(1, length(all_x_index)),
 )
 std_bettis = populate_dict!(
     Dict(),
     [all_datasets, ["BW", "WB"], ["dim0", "dim1"]],
-    final_structure = zeros(1, length(all_x_index)),
+    final_structure=zeros(1, length(all_x_index)),
 )
 
 
@@ -166,10 +166,10 @@ for (dataset, persistence_dataset) in persistence_data
             )
 
             average_bettis[dataset][selected_config][selected_dim] =
-                mean(img_bettis, dims = 2)
+                mean(img_bettis, dims=2)
             median_bettis[dataset][selected_config][selected_dim] =
-                median(img_bettis, dims = 2)
-            std_bettis[dataset][selected_config][selected_dim] = std(img_bettis, dims = 2)
+                median(img_bettis, dims=2)
+            std_bettis[dataset][selected_config][selected_dim] = std(img_bettis, dims=2)
         end
     end # selected_config
 end # datset
@@ -177,21 +177,21 @@ end # datset
 ## ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Create plots
 
-betti_colours = get_bettis_color_palete(min_dim = 0);
+betti_colours = get_bettis_color_palete(min_dim=0);
 
 art_colours = cgrad(
     [RGB([98, 197, 84] / 255...), RGB([91, 121, 177] / 255...), :purple],
     12,
-    categorical = true,
+    categorical=true,
 )[1:12]
 pseudoart_colours = cgrad(
     [RGB([150, 49, 49] / 255...), RGB([224, 154, 58] / 255...), :yellow],
     12,
-    categorical = true,
-    rev = true,
+    categorical=true,
+    rev=true,
 )[1:12]
-colour_group = cgrad(:RdBu_9, 6 * 2 + 3, categorical = true)
-colour_group = cgrad(:Paired_12, 12, categorical = true)
+colour_group = cgrad(:RdBu_9, 6 * 2 + 3, categorical=true)
+colour_group = cgrad(:Paired_12, 12, categorical=true)
 
 colurs_selection = OrderedDict(
     "art" => OrderedDict("dim0" => art_colours[1], "dim1" => art_colours[end-3]),
@@ -213,7 +213,7 @@ colurs_selection = OrderedDict(
     "Rothko" => OrderedDict("dim0" => colour_group[11], "dim1" => colour_group[12]),
 )
 
-selected_datasets = all_datasets[all_datasets .!= "pseudoart"]
+selected_datasets = all_datasets[all_datasets.!="pseudoart"]
 
 low_y = 0
 high_y = 0
@@ -226,7 +226,7 @@ final_height = 22.86 * points_per_cm
 
 for selected_config in ["BW", "WB"]
 
-    f = CairoMakie.Figure(size = (final_width, final_height))
+    f = CairoMakie.Figure(size=(final_width, final_height))
     fgl = CairoMakie.GridLayout(f[1, 1])
 
     supporting_low_y = -10
@@ -272,20 +272,20 @@ for selected_config in ["BW", "WB"]
             end
 
             axis_kwargs = (
-                title = "$(selected_config), $(dim_label), $(data_label)",
-                xtrimspine = true,
-                ytrimspine = true,
-                rightspinevisible = false,
-                topspinevisible = false,
-                xticks = 0:50:256,
+                title="$(selected_config), $(dim_label), $(data_label)",
+                xtrimspine=true,
+                ytrimspine=true,
+                rightspinevisible=false,
+                topspinevisible=false,
+                xticks=0:50:256,
                 #  yticks=0:25:100,
-                ylabel = y_label,
-                ytickformat = yticks_formatter,
+                ylabel=y_label,
+                ytickformat=yticks_formatter,
             )
             ax1 = CairoMakie.Axis(
                 fgl[i, d];
-                xlabel = "Filtration step",
-                yticks = y_range,
+                xlabel="Filtration step",
+                yticks=y_range,
                 axis_kwargs...,
             )
 
@@ -308,48 +308,48 @@ for selected_config in ["BW", "WB"]
 
             selected_axis = if false #selected_data == "Rothko"
                 grey_colour = RGBf(0.9, 0.9, 0.9)
-                ax1.bottomspinecolor=grey_colour
-                ax1.leftspinecolor=grey_colour
-                ax1.xtickcolor=grey_colour
-                ax1.ytickcolor=grey_colour
-                ax1.xtickcolor=grey_colour
-                ax1.xgridcolor=:white
-                ax1.ygridcolor=:white
+                ax1.bottomspinecolor = grey_colour
+                ax1.leftspinecolor = grey_colour
+                ax1.xtickcolor = grey_colour
+                ax1.ytickcolor = grey_colour
+                ax1.xtickcolor = grey_colour
+                ax1.xgridcolor = :white
+                ax1.ygridcolor = :white
                 ax1.xticklabelcolor = grey_colour
                 ax1.yticklabelcolor = grey_colour
                 ax1.title = ""
 
                 inset = MakieExtra.Axis(
                     fgl[i, d];
-                    width = Relative(0.9),
-                    height = Relative(0.9),
-                    halign = 0.4,
-                    valign = 0.1,
-                    backgroundcolor = (:white, 1.0),
-                    yticks = supporting_y_range,
+                    width=Relative(0.9),
+                    height=Relative(0.9),
+                    halign=0.4,
+                    valign=0.1,
+                    backgroundcolor=(:white, 1.0),
+                    yticks=supporting_y_range,
                     axis_kwargs...,
                 )
                 translate!(inset.blockscene, 30, 20, 100)
                 zoom_lines!(ax1, inset)
                 f
 
-                CairoMakie.ylims!(inset, low = supporting_low_y, high = supporting_high_y)
-                CairoMakie.xlims!(inset, low = -1, high = 256)
+                CairoMakie.ylims!(inset, low=supporting_low_y, high=supporting_high_y)
+                CairoMakie.xlims!(inset, low=-1, high=256)
                 f
                 inset
             else
                 ax1
             end
             f
-            band!(selected_axis, all_x_values, band_low, band_high, color = (c, 0.3))
-            lines!(selected_axis, all_x_values, bettis_mean, linewidth = 4, color = (c))
+            band!(selected_axis, all_x_values, band_low, band_high, color=(c, 0.3))
+            lines!(selected_axis, all_x_values, bettis_mean, linewidth=4, color=(c))
             lines!(
                 selected_axis,
                 all_x_values,
                 bettis_median,
-                linewidth = 2,
-                linestyle = (:dot, :dense),
-                color = (c),
+                linewidth=2,
+                linestyle=(:dot, :dense),
+                color=(c),
             )
 
             # if selected_data == "Rothko"
@@ -371,9 +371,9 @@ for selected_config in ["BW", "WB"]
                     ax1,
                     all_x_values,
                     bettis_vector,
-                    linestyle = linestyle,
-                    linewidth = 1,
-                    color = (c, line_alpha),
+                    linestyle=linestyle,
+                    linewidth=1,
+                    color=(c, line_alpha),
                 )
 
             end # name
@@ -381,10 +381,10 @@ for selected_config in ["BW", "WB"]
                 ax1.xlabel = "Filtration step"
             else
                 ax1.xlabel = ""
-                hidexdecorations!(ax1, ticks = false, grid = false)
+                hidexdecorations!(ax1, ticks=false, grid=false)
             end
-            CairoMakie.ylims!(ax1, low = low_y, high = high_y)
-            CairoMakie.xlims!(ax1, low = -1, high = 256)
+            CairoMakie.ylims!(ax1, low=low_y, high=high_y)
+            CairoMakie.xlims!(ax1, low=-1, high=256)
         end # dim
 
     end # dataset
@@ -396,14 +396,14 @@ for selected_config in ["BW", "WB"]
         [
             [
                 PolyElement(
-                    color = colurs_selection[d]["dim0"],
-                    strokecolor = :transparent,
+                    color=colurs_selection[d]["dim0"],
+                    strokecolor=:transparent,
                 )
                 PolyElement(
-                    color = colurs_selection[d]["dim1"],
-                    strokecolor = :transparent,
+                    color=colurs_selection[d]["dim1"],
+                    strokecolor=:transparent,
                 )
-            ] for d in all_datasets[all_datasets .!= "pseudoart"]
+            ] for d in all_datasets[all_datasets.!="pseudoart"]
         ],
     )
 
@@ -416,15 +416,15 @@ for selected_config in ["BW", "WB"]
             [
                 "$(@pipe d |> replace(_, "_" => " ") |> uppercasefirst), dim. 0",
                 "$(@pipe d |> replace(_, "_" => " ") |> uppercasefirst), dim. 1",
-            ] for d in all_datasets[all_datasets .!= "pseudoart"]
+            ] for d in all_datasets[all_datasets.!="pseudoart"]
         ],
     )
 
     group_lines = [
-        LineElement(color = :gray, linestyle = :solid, linewidth = 4)
-        LineElement(color = :gray, linestyle = (:dot, :dense), linewidth = 2)
-        LineElement(color = :gray, linestyle = :solid, linewidth = 1)
-        PolyElement(color = (:gray, 0.3), strokecolor = :gray)
+        LineElement(color=:gray, linestyle=:solid, linewidth=4)
+        LineElement(color=:gray, linestyle=(:dot, :dense), linewidth=2)
+        LineElement(color=:gray, linestyle=:solid, linewidth=1)
+        PolyElement(color=(:gray, 0.3), strokecolor=:gray)
     ]
 
     Legend(
@@ -432,20 +432,20 @@ for selected_config in ["BW", "WB"]
         group_color,
         group_labels,
         "",
-        nbanks = 4,
-        tellheight = true,
-        framevisible = false,
-        orientation = :horizontal,
+        nbanks=4,
+        tellheight=true,
+        framevisible=false,
+        orientation=:horizontal,
     )
     Legend(
         fgl[end+1, :],
         group_lines,
         ["Average curve", "Median curve", "Individual curve", "Standard deviation"],
         "",
-        nbanks = 1,
-        tellheight = true,
-        framevisible = false,
-        orientation = :horizontal,
+        nbanks=1,
+        tellheight=true,
+        framevisible=false,
+        orientation=:horizontal,
     )
 
     display(f)
@@ -463,12 +463,12 @@ for selected_config in ["BW", "WB"]
     thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
 
     out_name = plot_2m2_dir("$(selected_config)_$(thr)", out_img_name * ".png")
-    safesave(out_name, f, dpi = 300)
+    safesave(out_name, f, dpi=300)
 
     # ===-===-
     # PDF export
     out_name = plot_2m2_dir("$(selected_config)_$(thr)", "pdf", out_img_name * ".pdf")
-    safesave(out_name, f, dpi = 300)
+    safesave(out_name, f, dpi=300)
 
     @info "Saved all files."
 
