@@ -14,6 +14,7 @@ using Ripserer
 using CairoMakie
 using DataFrames: DataFrame
 using Pipe
+using LaTeXStrings
 
 using HypothesisTests
 
