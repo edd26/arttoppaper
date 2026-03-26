@@ -57,6 +57,29 @@ raw_paths = [
 ]
 
 # ===-===-
+# Named groups for batch processing. Anything not listed here is treated as a
+# literal directory name under exp_raw/ and checked at runtime.
+const dataset_groups = Dict(
+    "main"       => ["art-cropped", "pseudoart"],
+    "additional" => ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"],
+)
+
+function get_data_sets(data_set)
+    if haskey(dataset_groups, data_set)
+        group = dataset_groups[data_set]
+        return [path for path in raw_paths if any(occursin.(group, path[1]))]
+    else
+        dir = datadir("exp_raw", data_set)
+        if isdir(dir)
+            @info "\"$data_set\" not a named group — using directory: $dir"
+            return [(data_set,)]
+        else
+            error("Dataset \"$data_set\" is not a named group and directory does not exist: $dir")
+        end
+    end
+end
+
+# ===-===-
 TOTAL_NOISE_IMAGES = 100
 
 IMG_WIDTH = 1434

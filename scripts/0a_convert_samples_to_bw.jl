@@ -17,17 +17,7 @@ import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Image loading
-set1 = ["art", "pseudoart"]
-set1 = ["SimpleExamples"] # TODO clean up
-set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
-selected_set = if DATA_SET in set1
-    set1
-elseif DATA_SET in set2
-    set2
-else
-    ErrorException("Unrecognised dataset.") |> throw
-end
-data_sets = [path for path in CONFIG.raw_paths if any(occursin.(selected_set, path[1]))]
+data_sets = CONFIG.get_data_sets(DATA_SET)
 
 for raw_path in data_sets
 
