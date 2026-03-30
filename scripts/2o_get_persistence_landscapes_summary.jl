@@ -43,7 +43,7 @@ land_areas = DataFrame(
 )
 
 
-all_datasets = vcat("all_pseudoart", "art", artists_datasets)
+all_datasets = [d[1] for d in CONFIG.get_data_sets(DATA_SET)]
 
 # TODO missing here, but in 2m5, (artists_datasets, load_landscape)
 for d in all_datasets
@@ -54,7 +54,7 @@ for d in all_datasets
 
     files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
     files_list = filter(x -> occursin(CONFIG.DATA_CONFIG, x), files_list)
-    artist_bw_files_names = @pipe files_list |> ["$(k[1])" for k in split.(_, ".")]
+    artist_bw_files_names = [splitext(f)[1] for f in files_list]
 
     for f in artist_bw_files_names
         landscapes = load_landscape(f, d)
