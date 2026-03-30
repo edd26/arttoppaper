@@ -70,7 +70,7 @@ electrode_label =
 # ===-===-
 points_per_cm = 28.3465 * 1.5
 plt_width = ceil(Int, 18.0 * points_per_cm)
-plt_height = ceil(Int, 18.0 * points_per_cm)
+plt_height = ceil(Int, 20.0 * points_per_cm)
 
 f1 = CairoMakie.Figure(size=(plt_width, plt_height));
 fgl1_0 = CairoMakie.GridLayout(f1[1, 1])
@@ -103,14 +103,25 @@ ax_hmap_gamma = CairoMakie.Axis(fgl2_0[1, 1],
 
 cmap = cgrad([:red, RGBf(0, 1.0, 0.5), :blue], rev=true)
 colorrange = (-1, 1)
-heatmap!(ax_hmap_beta, beta_matrix[end:-1:1, :]',
+hmp1 = heatmap!(ax_hmap_beta, beta_matrix[end:-1:1, :]',
     colormap=cmap,
     colorrange=colorrange
 )
-heatmap!(ax_hmap_gamma, gamma_matrix[end:-1:1, :]',
+hmp2 = heatmap!(ax_hmap_gamma, gamma_matrix[end:-1:1, :]',
     colormap=cmap,
     colorrange=colorrange
 )
+
+for fgl in [fgl1_0, fgl2_0]
+    CairoMakie.Colorbar(
+        fgl[2, 1],
+        hmp1,
+        label="Connectivity strength",
+        labelfont=:bold,
+        vertical=false,
+    )
+end
+
 f1
 f2
 # ===-===-
