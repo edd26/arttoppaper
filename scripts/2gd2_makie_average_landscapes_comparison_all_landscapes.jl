@@ -63,11 +63,11 @@ pland_kwargs = (
 ax_pland0_gr1 = CairoMakie.Axis(fgl1[1, 1]; title = "Art, dimension 0", pland_kwargs...)
 # ax_pland0_gr2 = CairoMakie.Axis(fgl2[1, 1]; title="Artificially Generated, dimension 0", pland_kwargs...)
 ax_pland0_gr2 =
-    CairoMakie.Axis(fgl2[1, 1]; title = "Pseudo-art, dimension 0", pland_kwargs...)
-ax_pland1_gr1 = CairoMakie.Axis(fgl3[1, 1]; title = "Art, dimension 1", pland_kwargs...)
+    CairoMakie.Axis(fgl2[1, 2]; title = "Pseudo-art, dimension 0", pland_kwargs...)
+ax_pland1_gr1 = CairoMakie.Axis(fgl3[1, 2]; title = "Art, dimension 1", pland_kwargs...)
 # ax_pland1_gr2 = CairoMakie.Axis(fgl4[1, 1]; title="Artificially Generated, dimension 1", pland_kwargs...)
 ax_pland1_gr2 =
-    CairoMakie.Axis(fgl4[1, 1]; title = "Pseudo-art, dimension 1", pland_kwargs...)
+    CairoMakie.Axis(fgl4[1, 2]; title = "Pseudo-art, dimension 1", pland_kwargs...)
 
 fgl_vec = [fgl1, fgl2, fgl3, fgl4]
 ax_vec = [ax_pland0_gr1, ax_pland0_gr2, ax_pland1_gr1, ax_pland1_gr2]

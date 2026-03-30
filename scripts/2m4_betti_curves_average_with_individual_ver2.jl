@@ -23,11 +23,7 @@ CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 "MakiePlots.jl" |> srcdir |> include
 # "HeatmapsUtils.jl" |> srcdir |> include
 
-import .CONFIG:
-    preproc_img_dir_set,
-    SELECTED_DIM,
-    PERSISTENCE_THRESHOLD,
-    DATA_CONFIG
+import .CONFIG: preproc_img_dir_set, SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_CONFIG
 import .CONFIG: ripserer_computations_dir
 
 @info "Arguments processed."
