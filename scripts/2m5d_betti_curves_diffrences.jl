@@ -21,7 +21,7 @@ using HypothesisTests
 import Base.Threads: @spawn, @sync
 import Dates: now
 
-CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
+CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -38,7 +38,8 @@ scriptprefix = "2m5d"
 script_subname = "histograms_betti_area_difference"
 plot_2m5_dir(args...) = plotsdir("section2", scriptprefix * "-$(script_subname)", args...)
 
-log_2m5d_dir(args...) = projectdir("log", "section2", "$(scriptprefix)-$(script_subname)", args...)
+log_2m5d_dir(args...) =
+    projectdir("log", "section2", "$(scriptprefix)-$(script_subname)", args...)
 log_2m5d_dir() |> ispath || log_2m5d_dir() |> mkpath
 
 @info "Arguments processed."
@@ -52,7 +53,7 @@ all_datasets = vcat("all_pseudoart", artists_datasets)
 
 # all_datasets =
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
 
 
 for d in all_datasets
@@ -110,17 +111,17 @@ end # d selected_ config
 # =====
 
 betti_difference_df = DataFrame(
-    dataset=String[],
-    integrated_betti1=Float64[],
-    integrated_betti2=Float64[],
-    norm_integrated_betti1=Float64[],
-    norm_integrated_betti2=Float64[],
-    config1=String[],
-    dim1=String[],
-    config2=String[],
-    dim2=String[],
-    difference=Float64[],
-    norm_difference=Float64[],
+    dataset = String[],
+    integrated_betti1 = Float64[],
+    integrated_betti2 = Float64[],
+    norm_integrated_betti1 = Float64[],
+    norm_integrated_betti2 = Float64[],
+    config1 = String[],
+    dim1 = String[],
+    config2 = String[],
+    dim2 = String[],
+    difference = Float64[],
+    norm_difference = Float64[],
 )
 
 bw = "_BW"
@@ -229,22 +230,21 @@ end #
 
 datasets_combinations = vcat(
     [
-        all_datasets[all_datasets.!="art".&&all_datasets.!="pseudoart"],
-        all_datasets[all_datasets.!="pseudoart"],
+        all_datasets[all_datasets .!= "art".&&all_datasets .!= "pseudoart"],
+        all_datasets[all_datasets .!= "pseudoart"],
         ["art", "pseudoart"],
         ["art", "all_pseudoart"],
-    ], [
-        [d, "all_pseudoart"] for d in artists_datasets[artists_datasets.!="pseudoart"]
-    ]
+    ],
+    [[d, "all_pseudoart"] for d in artists_datasets[artists_datasets .!= "pseudoart"]],
 )
-non_art_labels_vec = vcat([
-        "all_pseudoart",
-        "all_pseudoart",
-        "pseudoart",],
+non_art_labels_vec = vcat(
+    ["all_pseudoart", "all_pseudoart", "pseudoart"],
     "all_pseudoart",
     [
-        "all_pseudoart" for _ in artists_datasets[artists_datasets.!="art".&&artists_datasets.!="pseudoart"]
-    ])
+        "all_pseudoart" for _ in
+        artists_datasets[artists_datasets .!= "art".&&artists_datasets .!= "pseudoart"]
+    ],
+)
 
 
 
