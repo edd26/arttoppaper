@@ -140,6 +140,37 @@ pseudoart_images_order = Dict(
     12 => "net_5225_1",
 )
 
+art_images_order = Dict(
+    1 => "1",
+    2 => "2",
+    3 => "3",
+    4 => "4",
+    5 => "5",
+    6 => "6",
+    7 => "7",
+    8 => "8",
+    9 => "9",
+    10 => "10",
+    11 => "11",
+    12 => "12",
+)
+
+pseudoart_name_to_order = Dict(
+    "net_5278_4" => 1,
+    "net_5299_2" => 2,
+    "net_5496_8" => 3,
+    # "net_5021_8" => 4,
+    "net_5024_8" => 4,
+    "net_5390_4" => 5,
+    "net_5063_7" => 6,
+    "net_5250_6" => 7,
+    "net_5193_0" => 8,
+    "net_5013_5" => 9,
+    "net_5390_8" => 10,
+    "net_5210_4" => 11,
+    "net_5225_1" => 12,
+)
+
 pseudoart_images_names = Dict(
     1 => "Wyjście z domu",
     2 => "Krzyżowanie się światów",
