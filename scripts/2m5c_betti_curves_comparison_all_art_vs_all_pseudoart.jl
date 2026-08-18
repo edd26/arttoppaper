@@ -19,7 +19,7 @@ using HypothesisTests: MannWhitneyUTest, pvalue
 
 import Base.Threads: @spawn, @sync
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -46,7 +46,7 @@ extension = ".jpg"
 all_datasets = vcat("all_pseudoart", artists_datasets)
 # all_datasets = ["art", "pseudoart"]
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
 
 selected_config = CONFIG.DATA_CONFIG
 all_x_values = 0:255
@@ -122,39 +122,39 @@ function get_comparison_plot(fname_bw, fname_wb, d)
 
     f = Figure()
     fgl = GridLayout(f[1, 1])
-    ax_bw_dim0 = CairoMakie.Axis(fgl[1, 1], title = "bw, dim0, reverse")
-    ax_bw_dim1 = CairoMakie.Axis(fgl[1, 2], title = "bw, dim1")
-    ax_wb_dim0 = CairoMakie.Axis(fgl[2, 2], title = "wb, dim0, reverse")
-    ax_wb_dim1 = CairoMakie.Axis(fgl[2, 1], title = "wb, dim1")
+    ax_bw_dim0 = CairoMakie.Axis(fgl[1, 1], title="bw, dim0, reverse")
+    ax_bw_dim1 = CairoMakie.Axis(fgl[1, 2], title="bw, dim1")
+    ax_wb_dim0 = CairoMakie.Axis(fgl[2, 2], title="wb, dim0, reverse")
+    ax_wb_dim1 = CairoMakie.Axis(fgl[2, 1], title="wb, dim1")
 
     ax_bw_dim1_minus_wb_dim0 =
-        CairoMakie.Axis(fgl[3, 2], title = "bw dim1 - reverse(wb dim0)")
+        CairoMakie.Axis(fgl[3, 2], title="bw dim1 - reverse(wb dim0)")
     ax_wb_dim0_minus_bw_dim1 =
-        CairoMakie.Axis(fgl[3, 1], title = "wb dim1 - reverse(bw dim0)")
+        CairoMakie.Axis(fgl[3, 1], title="wb dim1 - reverse(bw dim0)")
 
     CairoMakie.plot!(
         ax_bw_dim0,
         persistence_data[d]["BW"][fname_bw]["dim0"]["betti"][:y] |> reverse,
-        color = :green,
+        color=:green,
     )
     CairoMakie.plot!(
         ax_bw_dim1,
         persistence_data[d]["BW"][fname_bw]["dim1"]["betti"][:y],
-        color = :yellow,
+        color=:yellow,
     )
     CairoMakie.plot!(
         ax_wb_dim0,
         persistence_data[d]["WB"][fname_wb]["dim0"]["betti"][:y] |> reverse,
-        color = :green,
+        color=:green,
     )
     CairoMakie.plot!(
         ax_wb_dim1,
         persistence_data[d]["WB"][fname_wb]["dim1"]["betti"][:y],
-        color = :yellow,
+        color=:yellow,
     )
 
-    CairoMakie.plot!(ax_bw_dim1_minus_wb_dim0, bw_dim1_minus_wb_dim0, color = :orange)
-    CairoMakie.plot!(ax_wb_dim0_minus_bw_dim1, wb_dim1_minus_bw_dim0, color = :orange)
+    CairoMakie.plot!(ax_bw_dim1_minus_wb_dim0, bw_dim1_minus_wb_dim0, color=:orange)
+    CairoMakie.plot!(ax_wb_dim0_minus_bw_dim1, wb_dim1_minus_bw_dim0, color=:orange)
     return f
 end
 
@@ -175,17 +175,17 @@ get_comparison_plot(fnames_bw[k], fnames_wb[k], selected_data)
 L"$\Delta \rho_r = 1 / \binom{N}{1}$"
 
 betti_difference_df = DataFrame(
-    dataset = String[],
-    integrated_betti1 = Float64[],
-    integrated_betti2 = Float64[],
-    norm_integrated_betti1 = Float64[],
-    norm_integrated_betti2 = Float64[],
-    config1 = String[],
-    dim1 = String[],
-    config2 = String[],
-    dim2 = String[],
-    difference = Float64[],
-    norm_difference = Float64[],
+    dataset=String[],
+    integrated_betti1=Float64[],
+    integrated_betti2=Float64[],
+    norm_integrated_betti1=Float64[],
+    norm_integrated_betti2=Float64[],
+    config1=String[],
+    dim1=String[],
+    config2=String[],
+    dim2=String[],
+    difference=Float64[],
+    norm_difference=Float64[],
 )
 
 
@@ -277,17 +277,17 @@ artists_differences =
     filter(row -> row.dataset != all_datasets[1], betti_difference_df).norm_difference
 
 title_sufix = @pipe map(
-          x -> join(x, "_"),
-          [[first_config, first_selected_dim], [second_config, second_selected_dim]],
-      ) |>
-      (y -> "area" .* y) |>
-      join(_, " - ")
+                        x -> join(x, "_"),
+                        [[first_config, first_selected_dim], [second_config, second_selected_dim]],
+                    ) |>
+                    (y -> "area" .* y) |>
+                    join(_, " - ")
 
 f3 = Figure()
 fgl = GridLayout(f3[1, 1])
 ax_pseudo = CairoMakie.Axis(
     fgl[1, 1],
-    title = "Normalised Betti curve area difference, " * title_sufix,
+    title="Normalised Betti curve area difference, " * title_sufix,
 )
 # ax_art = CairoMakie.Axis(fgl[2, 1], title="Art")
 plot_labels = if length(all_datasets) == 2
@@ -298,16 +298,16 @@ end
 hist!(
     ax_pseudo,
     artists_differences;
-    normalization = :pdf,
-    label = plot_labels[1],
-    bins = 100,
+    normalization=:pdf,
+    label=plot_labels[1],
+    bins=100,
 )
 hist!(
     ax_pseudo,
     pseudoart_differences;
-    normalization = :pdf,
-    label = plot_labels[2],
-    bins = 100,
+    normalization=:pdf,
+    label=plot_labels[2],
+    bins=100,
 )
 axislegend(ax_pseudo)
 f3
@@ -321,11 +321,10 @@ fgl = CairoMakie.GridLayout(f2[1, 1])
 function get_boxplots_and_violins_plot(
     data1,
     data2,
-    f,
     fgl::GridLayout,
     all_datasets;
-    leged_title = "",
-    y_low = 0.0,
+    leged_title="",
+    y_low=0.0,
 )
     plot_labels = if length(all_datasets) == 2
         ["Art", "Pseudo-art"]
@@ -334,9 +333,9 @@ function get_boxplots_and_violins_plot(
     end
     # measure_vals_both = [artists_differences, pseudoart_differences]
     measure_vals_both = [data1, data2]
-    color_palette = cgrad(:heat, 3, categorical = true)[2:end]# Makie.wong_colors();
+    color_palette = cgrad(:heat, 3, categorical=true)[2:end]# Makie.wong_colors();
     color_values =
-        reduce(vcat, [[color_palette[k] for _ in measure_vals_both[k]] for k = 1:2]);
+        reduce(vcat, [[color_palette[k] for _ in measure_vals_both[k]] for k = 1:2])
 
     categories = []
     color_indices = []
@@ -370,17 +369,17 @@ function get_boxplots_and_violins_plot(
     # end
     # === plot
     # y_low = -00.01
-    ax_boxplot = CairoMakie.Axis(fgl[1, 1], xtrimspine = true)#, ylabel = scatter_label)
-    ax_estimate = CairoMakie.Axis(fgl[1, 2])
+    ax_boxplot = CairoMakie.Axis(fgl_local[1, 1], xtrimspine=true)#, ylabel = scatter_label)
+    ax_estimate = CairoMakie.Axis(fgl_local[1, 2])
 
     hidexdecorations!(
         ax_boxplot,
-        label = false,
-        ticklabels = false,
-        ticks = false,
-        grid = true,
-        minorgrid = true,
-        minorticks = true,
+        label=false,
+        ticklabels=false,
+        ticks=false,
+        grid=true,
+        minorgrid=true,
+        minorticks=true,
     )
     hideydecorations!(ax_boxplot)
 
@@ -397,13 +396,13 @@ function get_boxplots_and_violins_plot(
         ax_boxplot,
         categories,
         values,
-        whiskerwidth = 0.5,
-        strokecolor = :black,
-        strokewidth = 1,
-        color = color_values,
+        whiskerwidth=0.5,
+        strokecolor=:black,
+        strokewidth=1,
+        color=color_values,
     )
 
-    violin_kwargs = (side = :right, strokecolor = :black, strokewidth = 1)
+    violin_kwargs = (side=:right, strokecolor=:black, strokewidth=1)
     violin_alpha = 0.5
     for (k, values_vec) in enumerate(measure_vals_both)
         if length(measure_vals_both) > 2
@@ -412,33 +411,33 @@ function get_boxplots_and_violins_plot(
             category_x_vals = [1 for m in values_vec]
         end
         not_nan_positions2 = findall(x -> !isnan(x), values_vec)
-        category_colour = [color_values[categories .== k]][1]
+        category_colour = [color_values[categories.==k]][1]
         if length(values_vec) > 0
             CairoMakie.violin!(
                 ax_estimate,
                 category_x_vals[not_nan_positions2],
                 values_vec[not_nan_positions2];
-                color = (category_colour[k], violin_alpha),
+                color=(category_colour[k], violin_alpha),
                 violin_kwargs...,
             )
         end
     end
 
-    elements = [PolyElement(polycolor = color_palette[i]) for i = 1:length(plot_labels)]
+    elements = [PolyElement(polycolor=color_palette[i]) for i = 1:length(plot_labels)]
 
-    fgl3 = GridLayout(f[2, :])
+    fgl3 = GridLayout(fgl_local[2, :])
     legend_title = leged_title
 
-    i=1
+    i = 1
     l1 = Legend(
         fgl3[1, i],
         elements[:, i],
         plot_labels,
         legend_title,
-        tellwidth = false,
-        nbanks = 2,
-        tellheight = true,
-        framevisible = false,
+        tellwidth=false,
+        nbanks=2,
+        tellheight=true,
+        framevisible=false,
     )
 
     ##
@@ -447,7 +446,7 @@ function get_boxplots_and_violins_plot(
     ax_boxplot.xticks = ([xtick_start, xtick_end], plot_labels)
 
     for ax in [ax_boxplot, ax_estimate]
-        CairoMakie.ylims!(ax, low = y_low, high = y_high)
+        CairoMakie.ylims!(ax, low=y_low, high=y_high)
     end
 
     stat_test_result = MannWhitneyUTest(data1, data2)
@@ -465,11 +464,11 @@ function get_boxplots_and_violins_plot(
             bracket_y,
             xtick_end,
             bracket_y,
-            offset = 0,
-            text = p_marker,
-            style = :square,
-            fontsize = 30,
-            textoffset = -1,
+            offset=0,
+            text=p_marker,
+            style=:square,
+            fontsize=30,
+            textoffset=-1,
         )
     else
         p_marker = ""
@@ -489,8 +488,8 @@ f, l = get_boxplots_and_violins_plot(
     fgl,
     all_datasets;
     # ["art", "pseudo-art"];
-    leged_title = "Normalised Betti curve difference",
-    y_low = -0.2,
+    leged_title="Normalised Betti curve difference",
+    y_low=-0.2,
 )
 
 f
@@ -530,7 +529,7 @@ for (k, f) in enumerate([f2, f3][1:1])
 
     out_name =
         plot_2m5_dir("version$(k)", "$(selected_config)_$(thr)", out_img_name * ".png")
-    safesave(out_name, f, dpi = 300)
+    safesave(out_name, f, dpi=300)
 
     out_name = plot_2m5_dir(
         "version$(k)",
@@ -538,7 +537,7 @@ for (k, f) in enumerate([f2, f3][1:1])
         "pdf",
         out_img_name * ".pdf",
     )
-    safesave(out_name, f, dpi = 300)
+    safesave(out_name, f, dpi=300)
 
 end
 
@@ -554,10 +553,10 @@ artists_differences =
 
 f = Figure()
 fgl = GridLayout(f[1, 1])
-ax_pseudo = CairoMakie.Axis(fgl[1, 1], title = "Difference in Betti curve area ")
-ax_art = CairoMakie.Axis(fgl[2, 1], title = "Art")
-hist!(ax_pseudo, pseudoart_differences; normalization = :pdf, label = "pseudoart")
-hist!(ax_art, artists_differences; normalization = :pdf, label = "all art")
+ax_pseudo = CairoMakie.Axis(fgl[1, 1], title="Difference in Betti curve area ")
+ax_art = CairoMakie.Axis(fgl[2, 1], title="Art")
+hist!(ax_pseudo, pseudoart_differences; normalization=:pdf, label="pseudoart")
+hist!(ax_art, artists_differences; normalization=:pdf, label="all art")
 axislegend(ax_pseudo)
 axislegend(ax_art)
 f
