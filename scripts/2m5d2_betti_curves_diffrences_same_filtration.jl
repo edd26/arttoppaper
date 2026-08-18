@@ -14,12 +14,16 @@ using Ripserer
 using CairoMakie
 using DataFrames: DataFrame
 using Pipe
+using DelimitedFiles
 
-using HypothesisTests: LeveneTest, MannWhitneyUTest, BrownForsytheTest
+using HypothesisTests: LeveneTest, MannWhitneyUTest, BrownForsytheTest, pvalue
 
 import Base.Threads: @spawn, @sync
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
+
+scriptprefix = "2m5d2"
+script_subname = "histograms_betti_area_difference_same_fitration"
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -30,7 +34,7 @@ CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 "ExtendedDatasetUtils.jl" |> srcdir |> include
 
 # import .CONFIG: preproc_img_dir_set, SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_CONFIG
-# import .CONFIG: ripserer_computations_dir
+import .CONFIG: ripserer_computations_dir
 
 @info "Arguments processed."
 # ====================================================
@@ -39,11 +43,12 @@ all_x_index = 1:256
 extension = ".jpg"
 selected_config = CONFIG.DATA_CONFIG
 
-all_datasets = vcat("all_pseudoart", artists_datasets)
+# all_datasets = vcat("all_pseudoart", artists_datasets)
+all_datasets = artists_datasets
 
 # all_datasets =
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
 
 
 for d in all_datasets
@@ -101,17 +106,18 @@ end # d selected_ config
 # =====
 
 betti_difference_df = DataFrame(
-    dataset = String[],
-    integrated_betti1 = Float64[],
-    integrated_betti2 = Float64[],
-    norm_integrated_betti1 = Float64[],
-    norm_integrated_betti2 = Float64[],
-    config1 = String[],
-    dim1 = String[],
-    config2 = String[],
-    dim2 = String[],
-    difference = Float64[],
-    norm_difference = Float64[],
+    dataset=String[],
+    file=String[],
+    integrated_betti1=Float64[],
+    integrated_betti2=Float64[],
+    norm_integrated_betti1=Float64[],
+    norm_integrated_betti2=Float64[],
+    config1=String[],
+    dim1=String[],
+    config2=String[],
+    dim2=String[],
+    difference=Float64[],
+    norm_difference=Float64[],
 )
 
 bw = "_BW"
@@ -160,6 +166,7 @@ for d in all_datasets
             betti_difference_df,
             (
                 d,
+                f,
                 integrated_betti1,
                 integrated_betti2,
                 norm_integrated_betti1,
@@ -196,6 +203,7 @@ for d in all_datasets
             betti_difference_df,
             (
                 d,
+                f,
                 integrated_betti1,
                 integrated_betti2,
                 norm_integrated_betti1,
@@ -212,11 +220,33 @@ for d in all_datasets
 
 end # 
 #############
+#
+
+closest_to_0_4 = abs.(betti_difference_df.norm_difference .- 0.4) |> sortperm
+betti_difference_df[closest_to_0_4, :]
+
+csv_export_dir(args...) = ripserer_computations_dir("..", "$(scriptprefix)_bettis_differences", args...)
+csv_export_dir() |> ispath || csv_export_dir() |> mkdir
+output_csv = csv_export_dir("$(scriptprefix)_bettis_differences.csv")
+if !isfile(output_csv)
+    @info "Saving csv file for original data"
+    open(output_csv, "w") do io
+        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
+        writedlm(io, eachrow(betti_difference_df), ',')     # write the data rows
+    end
+end
+
+output_csv_sorted = csv_export_dir("$(scriptprefix)_bettis_differences_sorted0-4.csv")
+if !isfile(output_csv_sorted)
+    @info "Saving csv file for sorted data"
+    open(output_csv_sorted, "w") do io
+        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
+        writedlm(io, eachrow(betti_difference_df[closest_to_0_4, :]), ',')     # write the data rows
+    end
+end
+
 #################
 
-#########3
-#################
-############
 # ===-===-===-===-===-
 selected_test = LeveneTest
 selected_test = MannWhitneyUTest
@@ -224,8 +254,8 @@ selected_test = BrownForsytheTest
 
 datasets_combinations = [
     # artists_datasets,
-    all_datasets[all_datasets .!= "art".&&all_datasets .!= "pseudoart"],
-    all_datasets[all_datasets .!= "pseudoart"],
+    all_datasets[all_datasets.!="art".&&all_datasets.!="pseudoart"],
+    all_datasets[all_datasets.!="pseudoart"],
     ["art", "pseudoart"],
 ]
 non_art_labels_vec = ["all_pseudoart", "all_pseudoart", "pseudoart"]
@@ -237,16 +267,23 @@ non_art_label = ["all_pseudoart", "all_pseudoart", "pseudoart"][k]
 
 first_config = bw
 second_config = wb
+selected_first_config = bw
+selected_second_config = wb
 first_selected_dim = "dim0"
 second_selected_dim = "dim1"
 
-for (selected_first_config, selected_second_config) in zip([bw, wb], [bw, wb])
-    @info "selected_first_config = $(selected_first_config)"
-    config_filtered_differences_df =
-        filter(row -> row.config1==selected_first_config, betti_difference_df)
+do_saving = false
 
+for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_labels_vec)
+    f2 = Figure()
+    fgl = CairoMakie.GridLayout(f2[1, 1])
 
-    for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_labels_vec)
+    for (i, (selected_first_config, selected_second_config)) in enumerate(zip([bw, wb], [bw, wb]))
+        @info "selected_first_config = $(selected_first_config)"
+        config_filtered_differences_df =
+            filter(row -> row.config1 == selected_first_config, betti_difference_df)
+
+        fgl_local = CairoMakie.GridLayout(fgl[1, i])
         # @info "Selected datasets: " selected_datasets
 
         filtered_differences_df = filter(
@@ -260,36 +297,33 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [bw, wb])
             filter(row -> row.dataset != non_art_label, filtered_differences_df).norm_difference
 
         title_sufix = @pipe map(
-                  x -> join(x, "_"),
-                  [
-                      [selected_first_config, first_selected_dim],
-                      [selected_second_config, second_selected_dim],
-                  ],
-              ) |>
-              (y -> "area(Betti" .* y .* ")") |>
-              join(_, " - ") |>
-              z -> "(" * z .* ")/(average area)"
+                                x -> join(x, "_"),
+                                [
+                                    [selected_first_config, first_selected_dim],
+                                    [selected_second_config, second_selected_dim],
+                                ],
+                            ) |>
+                            (y -> "area(Betti" .* y .* ")") |>
+                            join(_, " - ") |>
+                            z -> "(" * z .* ")/(average area)"
 
-        f2 = Figure()
-        fgl = CairoMakie.GridLayout(f2[1, 1])
 
-        f, l = get_boxplots_and_violins_plot(
+        l1, stat_test_result = get_boxplots_and_violins_plot(
             artists_differences,
             pseudoart_differences,
-            f2,
-            fgl,
+            fgl_local,
             selected_datasets;
-            leged_title = replace(title_sufix, "_" => " "),
-            y_low = -2.8,
-            y_high = 2.8,
-            selected_test = selected_test,
+            leged_title=replace(title_sufix, "_" => " "),
+            y_low=-2.8,
+            y_high=2.8,
+            selected_test=selected_test,
         )
-        f
+    end # selected_dataset 
+    display(f2)
 
-        # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+    # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+    if do_saving
         @info "Saving..."
-        scriptprefix = "2m5d2"
-        script_subname = "histograms_betti_area_difference_same_fitration"
         plot_2m5_dir(args...) =
             plotsdir("section2", scriptprefix * "-$(script_subname)", args...)
 
@@ -298,7 +332,7 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [bw, wb])
         joined_keys = join(selected_datasets, "-")
         version =
             "normalised_" *
-            split(replace(replace(replace(title_sufix, " "=>"_"), "("=>""), ")"=>""), "/")[1]
+            split(replace(replace(replace(title_sufix, " " => "_"), "(" => ""), ")" => ""), "/")[1]
         out_img_name = "$(version)_$(joined_keys)"
         thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
 
@@ -306,16 +340,16 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [bw, wb])
             "selectedtest=$(selected_test)_$(thr)_$(version)",
             out_img_name * ".png",
         )
-        safesave(out_name, f, dpi = 300)
+        safesave(out_name, f, dpi=300)
 
         out_name = plot_2m5_dir(
             "selectedtest=$(selected_test)_$(thr)_$(version)",
             "pdf",
             out_img_name * ".pdf",
         )
-        safesave(out_name, f, dpi = 300)
+        safesave(out_name, f, dpi=300)
 
-    end # selected_dataset 
+    end
 end # selected_first_config
 ## ===-===-
 do_nothing = "ok"
