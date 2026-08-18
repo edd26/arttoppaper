@@ -258,16 +258,75 @@ first_config = bw
 second_config = wb
 first_selected_dim = "dim0"
 second_selected_dim = "dim1"
-do_saving = true
+do_saving = false
+
+selected_colourscheme = :heat
+colours = cgrad(selected_colourscheme, 5, categorical = true)
+color_palettes = [colours[3:2:end], colours[2:2:end]]
 
 
-for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
-    @info "selected_first_config = $(selected_first_config)"
-    config_filtered_differences_df =
-        filter(row -> row.config1 == selected_first_config, betti_difference_df)
+#selected_colourscheme = :berlin10
+selected_colourscheme = :lipari
+colours = cgrad(selected_colourscheme, 10, categorical = true)
+color_palettes = [colours[2:5:end], colours[3:5:end]]
+# selected_colourscheme = :managua10
+# colours = cgrad(selected_colourscheme, 10, categorical=true, rev=true)
+# color_palettes = [
+#     colours[2:6:end],
+#     colours[3:4:end],
+# ]
 
-    for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_labels_vec)
-        # @info "Selected datasets: " selected_datasets
+
+
+points_per_cm = 28.3465 * 1.5
+plt_width = ceil(Int, 20.0 * points_per_cm)
+plt_height = ceil(Int, 10.0 * points_per_cm)
+
+for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_labels_vec)
+    # @info "Selected datasets: " selected_datasets
+    plot_labels = if length(selected_datasets) == 2
+        if "art" in selected_datasets && "pseudoart" in selected_datasets
+            ["Art\n(Kot)", "Pseudo-art\n(Exhibition)"]
+        elseif "art" in selected_datasets && "all_pseudoart" in selected_datasets
+            ["Art (Kot)", "All Pseudo-art"]
+        else
+            [selected_datasets[1], "All Pseudo-art"]
+        end
+    else
+        ["All Art", "All Pseudo-art"]
+    end
+
+    f2 = Figure(size = (plt_width, plt_height))
+    fgl = CairoMakie.GridLayout(f2[1, 1])
+
+    for func_index = 1:2:3
+        indicator = if func_index == 1
+            "a)"
+        elseif func_index == 3
+            "b)"
+        end
+        Label(
+            fgl[1, func_index],
+            "$(indicator)",
+            tellheight = false,
+            tellwidth = true,
+            fontsize = 18,
+            justification = :left,
+            halign = :left,
+            valign = :top,
+        )
+    end
+
+    legend_labels_items = LaTeXStrings.LaTeXString[]
+    for (i, (selected_first_config, selected_second_config)) in
+        enumerate(zip([bw, wb], [wb, bw]))
+        @info "selected_first_config = $(selected_first_config)"
+
+        fgl_local = CairoMakie.GridLayout(fgl[1, 2i])
+
+        config_filtered_differences_df =
+            filter(row -> row.config1 == selected_first_config, betti_difference_df)
+
 
         filtered_differences_df = filter(
             row -> any(selected_datasets .== row.dataset),
@@ -280,53 +339,45 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
             filter(row -> row.dataset != non_art_label, filtered_differences_df).norm_difference
 
         title_sufix = @pipe map(
-                                x -> join(x, "_"),
-                                [
-                                    [selected_first_config, first_selected_dim],
-                                    [selected_second_config, second_selected_dim],
-                                ],
-                            ) |>
-                            (y -> "area(Betti" .* y .* ")") |>
-                            join(_, " - ") |>
-                            z -> "(" * z .* ")/average Betti"
+                  x -> join(x, "_"),
+                  [
+                      [selected_first_config, first_selected_dim],
+                      [selected_second_config, second_selected_dim],
+                  ],
+              ) |>
+              (y -> "area(Betti" .* y .* ")") |>
+              join(_, " - ") |>
+              z -> "(" * z .* ")/average Betti"
 
-
-        plot_labels = if length(selected_datasets) == 2
-            if "art" in selected_datasets && "pseudoart" in selected_datasets
-                ["Art (Kot)", "Pseudo-Art (Exhibition)"]
-            elseif "art" in selected_datasets && "all_pseudoart" in selected_datasets
-                ["Art (Kot)", "All Pseudo-Art"]
-            else
-                [selected_datasets[1], "All Pseudo-Art"]
-            end
-        else
-            ["All Art", "All Pseudo-Art"]
-        end
-
-        f2 = Figure()
-        fgl = CairoMakie.GridLayout(f2[1, 1])
 
         # axis_label = L"$\frac{area(\beta^{WB}_{dim-1}) - area(\beta^{BW}_{dim1}) }{ mean ( area(\beta^{WB}_{dim-1}), area(\beta^{BW}_{dim1})) }$.}$"
         o1 = replace(selected_first_config, "_" => "")
         o2 = replace(selected_second_config, "_" => "")
-        axis_label = L"\frac{area(\beta^{%$o1}_{dim0}) - area(\beta^{%$o2}_{dim1}) }{ mean ( area(\beta^{%$o1}_{dim0}), area(\beta^{%$o1}_{dim1})) }"
+        axis_label =
+            L"\frac{area(\beta^{%$o1}_{dim0}) - area(\beta^{%$o2}_{dim1}) }{ mean ( area(\beta^{%$o1}_{dim0}), area(\beta^{%$o1}_{dim1})) }"
+        push!(
+            legend_labels_items,
+            L"comparison $\beta^{%$o1}_{dim0}$ and $\beta^{%$o2}_{dim1}$",
+        )
+
 
         data1 = artists_differences
         data2 = pseudoart_differences
-        f, l, stat_test_result = get_boxplots_and_violins_plot(
+        l, stat_test_result = get_boxplots_and_violins_plot(
             artists_differences,
             pseudoart_differences,
-            f2,
-            fgl,
+            fgl_local,
             selected_datasets;
-            leged_title="",# replace(title_sufix, "_" => " "),
-            y_low=-0.2,
-            y_high=2.5,
-            ylabel=axis_label,
-            plot_labels=plot_labels
+            leged_title = "",# replace(title_sufix, "_" => " "),
+            y_low = -0.2,
+            y_high = 2.5,
+            ylabel = axis_label,
+            plot_labels = plot_labels,
+            add_legend = false,
+            add_stat_results = false,
+            color_palette = color_palettes[i],
             # selected_test=MannWhitneyUTest
         )
-        display(f)
 
         io = IOBuffer()
         println(io, "===-===-===-===-===-===-===-===-===-===-===-===-===-===-")
@@ -335,37 +386,83 @@ for (selected_first_config, selected_second_config) in zip([bw, wb], [wb, bw])
         println(io, "")
         println(io, stat_test_result)
         println(io, "")
+        println(io, "Mean for: ")
+        println(io, "\n- artistic data is $(data1 |> mean)")
+        println(io, "\n- non-artistic data is $(data2 |> mean)")
+        println(io, "")
+        println(io, "Std for: ")
+        println(io, "\n- artistic data is $(data1 |> std)")
+        println(io, "\n- non-artistic data is $(data2 |> std)")
+        println(io, "")
+        println(io, "Median for: ")
+        println(io, "\n- artistic data is $(data1 |> median)")
+        println(io, "\n- non-artistic data is $(data2 |> median)")
+        println(io, "")
 
         joined_keys = join(selected_datasets, "-")
         version =
-            "normalised_" *
-            split(replace(replace(replace(title_sufix, " " => "_"), "(" => ""), ")" => ""), "/")[1]
+            "normalised_" * (@pipe replace(title_sufix, " " => "_") |>
+                   replace(_, "(" => "") |>
+                   replace(_, ")" => "") |>
+                   split(_, "/")[1])
         out_img_name = "$(version)_$(joined_keys)"
         logfile = log_2m5d_dir(out_img_name * ".txt")
         open(logfile, "a") do fio
             write(fio, String(take!(io)))
         end
 
-        # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-        if do_saving
-            @info "Saving..."
+    end
+    fgl3 = GridLayout(fgl[2, :])
 
-            # ===-===-===-
+    elements1, elements2 = map(
+        palette -> [PolyElement(polycolor = palette[i]) for i = 1:length(plot_labels)],
+        color_palettes,
+    )
+    legend_colours = [[elements1[1], elements2[1]], [elements1[2], elements2[2]]]
 
-            out_img_name = "$(version)_$(joined_keys)"
-            thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
+    legend_labels = [
+        [legend_labels_items[1], legend_labels_items[2]],
+        [legend_labels_items[1], legend_labels_items[2]],
+    ]
 
-            out_name =
-                plot_2m5_dir("$(thr)_$(version)", out_img_name * ".png")
-            safesave(out_name, f, dpi=300)
+    Legend(
+        fgl3[1, 1],
+        legend_colours,
+        legend_labels,
+        plot_labels,
+        tellwidth = false,
+        nbanks = 2,
+        tellheight = true,
+        framevisible = false,
+        titleposition = :left,
+        orientation = :horizontal,
+        # titlefont=:regular
+    )
 
-            out_name = plot_2m5_dir(
-                "$(thr)_$(version)",
-                "pdf",
-                out_img_name * ".pdf",
-            )
-            safesave(out_name, f, dpi=300)
-        end
+    CairoMakie.colsize!(fgl, 1, 0)
+    CairoMakie.colsize!(fgl, 3, 0)
+    display(f2)
+    # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+    if do_saving
+        @info "Saving..."
+
+        # ===-===-===-
+
+        joined_keys = join(selected_datasets, "-")
+        version = "normalised_betti_area_difference"
+        # *
+        # (@pipe replace(title_sufix, " " => "_") |>
+        #        replace(_, "(" => "") |>
+        #        replace(_, ")" => "") |>
+        #        split(_, "/")[1])
+        out_img_name = "$(version)_$(joined_keys)"
+        thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
+
+        out_name = plot_2m5_dir("$(thr)_$(version)", out_img_name * ".png")
+        safesave(out_name, f2, dpi = 300)
+
+        out_name = plot_2m5_dir("$(thr)_$(version)", "pdf", out_img_name * ".pdf")
+        safesave(out_name, f2, dpi = 300)
 
     end # selected_dataset 
 end # selected_first_config
