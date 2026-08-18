@@ -41,8 +41,7 @@ extension = ".jpg"
 
 # artists_datasets =
 # set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
-#     set2 = ["art", "pseudoart"]
-# artists_datasets = set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
+artists_datasets = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
 total_img_per_artist = Dict()
 
 alg = :homology
@@ -50,7 +49,7 @@ reps = true
 cutoff = PERSISTENCE_THRESHOLD
 force_computations = false
 
-@sync for dataset in set2
+@sync for dataset in artists_datasets 
 
     simple_img_dir(args...) =
         datadir("exp_pro", "img_initial_preprocessing", "BW", dataset, args...)
