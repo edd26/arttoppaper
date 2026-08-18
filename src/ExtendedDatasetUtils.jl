@@ -135,8 +135,7 @@ plt_atributes = Dict(
 function get_boxplots_and_violins_plot(
     data1,
     data2,
-    f,
-    fgl::GridLayout,
+    fgl_local::GridLayout,
     all_datasets;
     leged_title="",
     ylabel="",
@@ -144,10 +143,12 @@ function get_boxplots_and_violins_plot(
     y_low=0.0,
     y_high=2.0,
     selected_test::Function=MannWhitneyUTest,
+    color_palette=cgrad(:heat, 3, categorical=true)[2:end],
+    add_legend=true,
+    add_stat_results=true,
 )
 
     measure_vals_both = [data1, data2]
-    color_palette = cgrad(:heat, 3, categorical=true)[2:end]
     color_values =
         reduce(vcat, [[color_palette[k] for _ in measure_vals_both[k]] for k = 1:2])
 
@@ -163,8 +164,8 @@ function get_boxplots_and_violins_plot(
     values = vcat(measure_vals_both...)
     bracket_y = 0.8 * y_high
     ax_boxplot =
-        CairoMakie.Axis(fgl[1, 1], xtrimspine=true, ytrimspine=true, ylabel=ylabel)
-    ax_estimate = CairoMakie.Axis(fgl[1, 2])
+        CairoMakie.Axis(fgl_local[1, 1], xtrimspine=true, ytrimspine=true, ylabel=ylabel)
+    ax_estimate = CairoMakie.Axis(fgl_local[1, 2])
 
     hidexdecorations!(
         ax_boxplot,
@@ -217,29 +218,9 @@ function get_boxplots_and_violins_plot(
         end
     end
 
-    elements = [PolyElement(polycolor=color_palette[i]) for i = 1:length(plot_labels)]
-
-    fgl3 = GridLayout(f[2, :])
-    fgl3_row_index = 1
-    legend_title = leged_title
-
-    i = 1
-    l1 = Legend(
-        fgl3[fgl3_row_index, i],
-        elements[:, i],
-        plot_labels,
-        legend_title,
-        tellwidth=false,
-        nbanks=2,
-        tellheight=true,
-        framevisible=false,
-    )
-    ##
-    fgl3_row_index += 1
     xtick_start = 1
     xtick_end = 2
     ax_boxplot.xticks = ([xtick_start, xtick_end], plot_labels)
-
     for ax in [ax_boxplot, ax_estimate]
         CairoMakie.ylims!(ax, low=y_low, high=y_high)
     end
@@ -274,20 +255,48 @@ function get_boxplots_and_violins_plot(
         ("", "")
     end # p-plot
 
-    p_value_truncated = if p_value_str == ""
-        (@sprintf "%.3f" pvalue(stat_test_result))
-    else
-        p_value_str
-    end
-    description = "$(selected_test), p-value: " * p_value_truncated
-    Label(fgl3[fgl3_row_index, :], description, tellwidth=false)
-    fgl3_row_index += 1
+    l1 = nothing
+    if add_legend || add_stat_results
+        fgl3 = GridLayout(fgl_local[2, :])
+        fgl3_row_index = 1
+        legend_title = leged_title
 
-    if length(all_datasets) > 2
-        art_description =
-            "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
-        Label(fgl3[fgl3_row_index, :], art_description, tellwidth=false)
+        i = 1
+        if add_legend
+            elements = [PolyElement(polycolor=color_palette[i]) for i = 1:length(plot_labels)]
+            l1 = Legend(
+                fgl3[fgl3_row_index, i],
+                elements[:, i],
+                plot_labels,
+                legend_title,
+                tellwidth=false,
+                nbanks=2,
+                tellheight=true,
+                framevisible=false,
+            )
+            ##
+            fgl3_row_index += 1
+        end
+
+
+
+        if add_stat_results
+            p_value_truncated = if p_value_str == ""
+                (@sprintf "%.3f" pvalue(stat_test_result))
+            else
+                p_value_str
+            end
+            description = "$(selected_test), p-value: " * p_value_truncated
+            Label(fgl3[fgl3_row_index, :], description, tellwidth=false)
+            fgl3_row_index += 1
+
+            if length(all_datasets) > 2
+                art_description =
+                    "Data in art:" * join([d for d in all_datasets if !occursin("pseudo", d)], " ")
+                Label(fgl3[fgl3_row_index, :], art_description, tellwidth=false)
+            end
+        end
     end
 
-    return f, l1, stat_test_result
+    return l1, stat_test_result
 end
