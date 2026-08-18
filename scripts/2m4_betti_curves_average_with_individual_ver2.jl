@@ -203,22 +203,24 @@ end # datset
 
 betti_colours = get_bettis_color_palete(min_dim = 0);
 
-art_colours = cgrad(
-    [RGB([98, 197, 84] / 255...), RGB([91, 121, 177] / 255...), :purple],
-    12,
-    categorical = true,
-)[1:12]
-pseudoart_colours = cgrad(
-    [RGB([150, 49, 49] / 255...), RGB([224, 154, 58] / 255...), :yellow],
-    12,
-    categorical = true,
-    rev = true,
-)[1:12]
+# art_colours = cgrad(
+#     [RGB([98, 197, 84] / 255...), RGB([91, 121, 177] / 255...), :purple],
+#     12,
+#     categorical = true,
+# )[1:12]
+# pseudoart_colours = cgrad(
+#     [RGB([150, 49, 49] / 255...), RGB([224, 154, 58] / 255...), :yellow],
+#     12,
+#     categorical = true,
+#     rev = true,
+# )[1:12]
+art_colours = cgrad(:berlin10, 12, categorical = true)[1:2:3]
+pseudoart_colours = cgrad(:lipari, 14, categorical = true)[9:-2:7]
 
 colurs_selection = OrderedDict(
-    "art" => OrderedDict("dim0" => art_colours[1], "dim1" => art_colours[end-3]),
+    "art" => OrderedDict("dim0" => art_colours[1], "dim1" => art_colours[2]),
     "pseudoart" =>
-        OrderedDict("dim0" => pseudoart_colours[end], "dim1" => pseudoart_colours[2]),
+        OrderedDict("dim0" => pseudoart_colours[1], "dim1" => pseudoart_colours[2]),
 )
 
 low_y = 0
@@ -255,8 +257,21 @@ for (d, selected_dim) in ["dim0", "dim1"] |> enumerate
 
     dim_label = replace(selected_dim, "dim" => "dimension ")
 
-    ax1 = CairoMakie.Axis(
+    label = ["$(x))" for x = 'a':'z'][d]
+    Label(
         fgl[d, 1],
+        label,
+        tellheight = false,
+        tellwidth = true,
+        fontsize = 18,
+        justification = :left,
+        halign = :left,
+        valign = :top,
+    )
+
+
+    ax1 = CairoMakie.Axis(
+        fgl[d, 2],
         title = "$(dim_label)",
         xtrimspine = true,
         ytrimspine = true,
@@ -329,6 +344,8 @@ for (d, selected_dim) in ["dim0", "dim1"] |> enumerate
 
 end # dataset
 
+colsize!(fgl, 1, Relative(0.001))
+
 group_color = [
     PolyElement(color = colurs_selection["art"]["dim0"], strokecolor = :transparent)
     PolyElement(color = colurs_selection["art"]["dim1"], strokecolor = :transparent)
@@ -360,6 +377,7 @@ Legend(
     framevisible = false,
     orientation = :horizontal,
 )
+f
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 @info "Saving."
