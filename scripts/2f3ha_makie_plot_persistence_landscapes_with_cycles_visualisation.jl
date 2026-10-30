@@ -38,8 +38,10 @@ max_x_val = 255
 max_land_height = √2 * 255 * 0.5
 
 extension = ".jpg"
+do_saving = false
 
-for name in files_names
+# for name in [f for f in files_names if occursin("2_", f) && length(f)==3]
+for name in [f for f in files_names if occursin("net_5063_7", f)]
     @info "Name: $(name)"
 
     input_img_name = name * extension
@@ -145,14 +147,14 @@ for name in files_names
     for (ax, local_dim, colour_vec) in
         zip([ax_pland0, ax_pland1], ["dim0", "dim1"], color_vectors)
         max_colour_range =
-            size(persistence_data[data_config][local_dim][name]["landscapes"].land, 1)
+            size(persistence_data[DATA_CONFIG][local_dim][name]["landscapes"].land, 1)
         custom_colors = [
             RGBf(c) for c in
             cgrad(colour_vec, max(2, max_colour_range), categorical = true, rev = false)
         ]
         plot_persistence_landscape!(
             ax,
-            persistence_data[data_config][local_dim][name]["landscapes"],
+            persistence_data[DATA_CONFIG][local_dim][name]["landscapes"],
             custom_colors = custom_colors,
         )
         push!(pland_max_vals, max_colour_range)
@@ -185,14 +187,14 @@ for name in files_names
     colours = get_bettis_color_palete(min_dim = 0)
 
     if sort_by_death
-        persistence_dim0 = persistence_data[data_config]["dim0"][name]["barcodes"][1]
-        persistence_dim1 = persistence_data[data_config]["dim1"][name]["barcodes"][1]
+        persistence_dim0 = persistence_data[DATA_CONFIG]["dim0"][name]["barcodes"][1]
+        persistence_dim1 = persistence_data[DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
         persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 2]), :]
         persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 2]), :]
     else
-        persistence_dim0 = persistence_data[data_config]["dim0"][name]["barcodes"][1]
-        persistence_dim1 = persistence_data[data_config]["dim1"][name]["barcodes"][1]
+        persistence_dim0 = persistence_data[DATA_CONFIG]["dim0"][name]["barcodes"][1]
+        persistence_dim1 = persistence_data[DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
         persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 1]), :]
         persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 1]), :]
@@ -250,34 +252,28 @@ for name in files_names
 
     f
     img_plot = f
+    display(f)
 
     # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-    @info "Saving."
-    plot_2f3h_dir(args...) =
-        plotsdir("section2", script_prefix * "_$(script_name)", args...)
+    if do_saving
+        @info "Saving."
+        plot_2f3h_dir(args...) =
+            plotsdir("section2", script_prefix * "_$(script_name)", args...)
 
-    # ===-===-===-
-    @info "Saving file: $(name)"
-    out_img_name = "$(split(name, ".csv")[1]).png"
-    thr = "threshold=$(PERSISTENCE_THRESHOLD)"
+        # ===-===-===-
+        @info "Saving file: $(name)"
+        out_img_name = "$(split(name, ".csv")[1]).png"
+        thr = "threshold=$(PERSISTENCE_THRESHOLD)"
 
-    if sort_by_death
-        out_name = plot_2f3h_dir(CONFIG.path_args..., thr * "_death_sorted", out_img_name)
-    else
-        out_name = plot_2f3h_dir(CONFIG.path_args..., thr, out_img_name)
+        if sort_by_death
+            out_name =
+                plot_2f3h_dir(CONFIG.path_args..., thr * "_death_sorted", out_img_name)
+        else
+            out_name = plot_2f3h_dir(CONFIG.path_args..., thr, out_img_name)
+        end
+        safesave(out_name, img_plot)
+
     end
-    safesave(out_name, img_plot)
-
-    # ===-===-
-    # PDF export
-    # out_img_name = "$(split(file, ".csv")[1]).pdf"
-
-    # if sort_by_death
-    #     out_name = plot_2f3h_dir(CONFIG.path_args..., thr * "_death_sorted", "pdf", out_img_name)
-    # else
-    #     out_name = plot_2f3h_dir(CONFIG.path_args..., thr, "pdf", out_img_name)
-    # end
-    # safesave(out_name, img_plot)
 end
 
 @info "Saved all files."

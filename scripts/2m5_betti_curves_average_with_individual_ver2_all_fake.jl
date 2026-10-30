@@ -41,7 +41,16 @@ extension = ".jpg"
 
 # artists_datasets =
 # set2 = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"]
-artists_datasets = ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter"]
+artists_datasets = ["Jarema-cropped", "Pollock-cropped", "Kandinsky-cropped", "Rothko-cropped", "Malevich-cropped"]
+artists_datasets = ["Jarema", "Pollock", "Kandinsky", "Rothko", "Malevich"]
+
+# artists_datasets = [
+#     "Rothko-cropped2",
+#     "Richter-cropped2",
+#     "Kandinsky-cropped2",
+#     "Malevich-cropped2",
+#     "Jarema-cropped2",
+# ]
 total_img_per_artist = Dict()
 
 alg = :homology
@@ -49,7 +58,7 @@ reps = true
 cutoff = PERSISTENCE_THRESHOLD
 force_computations = false
 
-@sync for dataset in artists_datasets 
+@sync for dataset in artists_datasets
 
     simple_img_dir(args...) =
         datadir("exp_pro", "img_initial_preprocessing", "BW", dataset, args...)
@@ -60,8 +69,8 @@ force_computations = false
     total_img_per_artist[dataset] = length(artist_bw_files_names)
 
     name = artist_bw_files_names[end]
-    # @spawn for name in artist_bw_files_names
-    for name in artist_bw_files_names
+    @spawn for name in artist_bw_files_names
+        # for name in artist_bw_files_names
         @info "Working on file $(name)"
 
 

@@ -42,8 +42,8 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
     end
     for func in parameters_vec[func_range]
         @info "\tWorking on: $(func)"
-        func_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_error_df)
-        func_ecdf_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_df)
+        func_df = filter(row -> row.parameter == "$(func)", ECDF_from_feature_map_error_df)
+        func_ecdf_df = filter(row -> row.parameter == "$(func)", ECDF_from_feature_map_df)
         func_parameters_df = filter(row -> row.parameter == "$(func)", parameters_df)
 
         for selected_data in [k for k in keys(unique_cycles_count_in_windows[window_size])]
@@ -74,7 +74,7 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
 
             single_height = 250
             single_width = 220
-            f = Figure(size = (single_width * 4, single_height * 12))
+            f = Figure(size=(single_width * 4, single_height * 12))
             fgl_main = GridLayout(f[1, 1])
 
             et_df = dataset_df_dict[selected_data]
@@ -123,35 +123,35 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                 stat_test_result, test_p_value = get_p_values(
                     vec1,
                     vec2;
-                    do_KW = do_KW,
-                    do_mann_whitney = do_mann_whitney,
-                    do_signed_rank = do_signed_rank,
-                    do_fdr_miller = do_fdr_miller,
+                    do_KW=do_KW,
+                    do_mann_whitney=do_mann_whitney,
+                    do_signed_rank=do_signed_rank,
+                    do_fdr_miller=do_fdr_miller,
                 )
 
                 fgl1 = GridLayout(fgl_main[img_index, session_index])
 
                 ax_scatter, ax_boxplot, ax_estimate =
-                    set_up_ax_distro_plt(fgl1; scatter_label = scatter_label)
+                    set_up_ax_distro_plt(fgl1; scatter_label=scatter_label)
                 do_distro_plot(
                     ax_scatter,
                     ax_boxplot,
                     ax_estimate,
                     vec1,
                     vec2,
-                    art_val = val1,
-                    pseudoart_val = val2,
-                    skip_violin = true,
+                    art_val=val1,
+                    pseudoart_val=val2,
+                    skip_violin=true,
                 )
                 ax_scatter.xticks = (val1:val2, ["Looking", "Not looking"])
 
                 for ax in [ax_scatter, ax_boxplot, ax_estimate]
-                    CairoMakie.ylims!(ax, low = y_low, high = y_high)
+                    CairoMakie.ylims!(ax, low=y_low, high=y_high)
                 end
 
-                ax_ecdf_looked = CairoMakie.Axis(fgl1[1, 3], title = "looked")
-                ax_ecdf_not_looked = CairoMakie.Axis(fgl1[1, 4], title = "not looked")
-                ax_img = CairoMakie.Axis(fgl1[1, 5], aspect = AxisAspect(1434 / 2048))
+                ax_ecdf_looked = CairoMakie.Axis(fgl1[1, 3], title="looked")
+                ax_ecdf_not_looked = CairoMakie.Axis(fgl1[1, 4], title="not looked")
+                ax_img = CairoMakie.Axis(fgl1[1, 5], aspect=AxisAspect(1434 / 2048))
 
                 extension = ".jpg"
                 name = split(img_parameters_df.img_name[1], ".jpg")[1]
@@ -184,12 +184,12 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                 ax_img.yreversed = true
                 hidedecorations!(
                     ax_img,
-                    label = true,
-                    ticklabels = true,
-                    ticks = true,
-                    grid = true,
-                    minorgrid = true,
-                    minorticks = true,
+                    label=true,
+                    ticklabels=true,
+                    ticks=true,
+                    grid=true,
+                    minorgrid=true,
+                    minorticks=true,
                 )
 
                 img_data = img_df[1, :]
@@ -232,19 +232,19 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                     end
 
                     colours = Makie.wong_colors()
-                    ecdfplot!(ax_ecdf_looked, looked_values, color = :red)
-                    ecdfplot!(ax_ecdf_not_looked, not_looked_values, color = colours[2])
+                    ecdfplot!(ax_ecdf_looked, looked_values, color=:red)
+                    ecdfplot!(ax_ecdf_not_looked, not_looked_values, color=colours[2])
                 end
 
                 ecdfplot!(
                     ax_ecdf_looked,
                     img_parameters_df.parameters_values[1],
-                    color = :blue,
+                    color=:blue,
                 )
                 ecdfplot!(
                     ax_ecdf_not_looked,
                     img_parameters_df.parameters_values[1],
-                    color = :blue,
+                    color=:blue,
                 )
                 f
 
@@ -263,11 +263,11 @@ for data_type in [:ECDF_mse, :ECDF_error, :KS_statistic]
                         bracket_y,
                         val2,
                         bracket_y,
-                        offset = 0,
-                        text = p_marker,
-                        style = :square,
-                        fontsize = 30,
-                        textoffset = -1,
+                        offset=0,
+                        text=p_marker,
+                        style=:square,
+                        fontsize=30,
+                        textoffset=-1,
                     )
                 else
                     p_marker = "-"

@@ -50,6 +50,7 @@ fgl1 = CairoMakie.GridLayout(fgl_0[1, 1])
 fgl2 = CairoMakie.GridLayout(fgl_0[1, 2])
 fgl3 = CairoMakie.GridLayout(fgl_0[2, 1])
 fgl4 = CairoMakie.GridLayout(fgl_0[2, 2])
+fgl_vec = [fgl1, fgl2, fgl3, fgl4]
 
 pland_kwargs = (
     ylabel = "A.U.",
@@ -60,7 +61,22 @@ pland_kwargs = (
     yticks = 0:25:125,
     xlabel = "Filtration step",
 )
-ax_pland0_gr1 = CairoMakie.Axis(fgl1[1, 1]; title = "Art, dimension 0", pland_kwargs...)
+
+
+for (label, fgl) in zip(["$(x))" for x = 'a':'d'], fgl_vec)
+    Label(
+        fgl[1, 1],
+        label,
+        tellheight = false,
+        tellwidth = true,
+        fontsize = 18,
+        justification = :left,
+        halign = :left,
+        valign = :top,
+    )
+end
+
+ax_pland0_gr1 = CairoMakie.Axis(fgl1[1, 2]; title = "Art, dimension 0", pland_kwargs...)
 # ax_pland0_gr2 = CairoMakie.Axis(fgl2[1, 1]; title="Artificially Generated, dimension 0", pland_kwargs...)
 ax_pland0_gr2 =
     CairoMakie.Axis(fgl2[1, 2]; title = "Pseudo-art, dimension 0", pland_kwargs...)
@@ -69,7 +85,6 @@ ax_pland1_gr1 = CairoMakie.Axis(fgl3[1, 2]; title = "Art, dimension 1", pland_kw
 ax_pland1_gr2 =
     CairoMakie.Axis(fgl4[1, 2]; title = "Pseudo-art, dimension 1", pland_kwargs...)
 
-fgl_vec = [fgl1, fgl2, fgl3, fgl4]
 ax_vec = [ax_pland0_gr1, ax_pland0_gr2, ax_pland1_gr1, ax_pland1_gr2]
 for ax in ax_vec
     CairoMakie.ylims!(ax, high = 135)
@@ -127,7 +142,7 @@ for (ax, fgl, pland, c) in zip(ax_vec, fgl_vec, land_vec, colour_vec)
         selected_dim = 1
     end
     Colorbar(
-        fgl[1, 2],
+        fgl[1, 3],
         limits = (0, pland_max_vals),
         ticks = 0:tick_step:pland_max_vals,
         ticklabelrotation = -pi / 4,
@@ -144,6 +159,11 @@ map(x -> hidexdecorations!(x, ticks = false, grid = false), [ax_pland0_gr1, ax_p
 
 colgap!(fgl_0, 10)
 rowgap!(fgl_0, 30)
+
+for fgl in fgl_vec
+    colsize!(fgl, 1, Relative(0.001))
+end
+
 
 f1
 

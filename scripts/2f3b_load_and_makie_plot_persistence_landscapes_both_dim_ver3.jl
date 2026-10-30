@@ -2,171 +2,17 @@
 using DrWatson
 @quickactivate "arttopopaper"
 
-# ===-===-===-
-using DataStructures: OrderedDict
-using DelimitedFiles
-using Images
-using PersistenceLandscapes
 using CairoMakie
 using Pipe
-using Ripserer
-
-import Base.Threads: @spawn, @sync
 
 CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
 scriptprefix = "2f3b3"
-# ===-===-===-
-"config.jl" |> scriptsdir |> include
-"loading_utils.jl" |> srcdir |> include
-"DataStructuresUtils.jl" |> srcdir |> include
+
+"2f.jl" |> scriptsdir |> include
 "LandscapesPlotting.jl" |> srcdir |> include
 "MakiePlots.jl" |> srcdir |> include
 
-import .CONFIG: preproc_img_dir, SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_CONFIG
-import .CONFIG: ripserer_computations_dir
-
-@info "Arguments processed."
-# ===-===-===-
-readrows(file_name) = DelimitedFiles.readdlm(file_name, ',', Float64, '\n')
-
-# ===-===-===-
-configs_dir_vector = if CONFIG.DATA_CONFIG == "RGB"
-    ["RGB"]
-elseif CONFIG.DATA_CONFIG == "BW" || CONFIG.DATA_CONFIG == "WB"
-    ["BW", "WB"]
-end
-
-persistence_data = populate_dict!(
-    Dict(),
-    [configs_dir_vector, ["dim0", "dim1"]],
-    final_structure = OrderedDict(),
-)
-
-extension = ".jpg"
-data_folder = CONFIG.DATA_SET
-
-for data_config in configs_dir_vector
-
-    simple_img_dir(args...) = datadir(
-        "exp_pro",
-        "img_initial_preprocessing",
-        data_config,
-        CONFIG.DATA_SET,
-        args...,
-    )
-
-    files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
-    files_list = filter(x -> occursin(data_config, x), files_list)
-    bw_files_names = @pipe files_list |> [k[1] for k in split.(_, ".")]
-
-    for file in bw_files_names
-        @info "Working on file $(file)"
-
-        name = file
-
-        # Load image
-        img1 = name * extension |> simple_img_dir |> load
-        scaled_img = floor.(Int, Gray.(img1) .* 255)
-        scaled_img_WB = abs.(scaled_img .- 255)
-
-        for (data_config, input_img) in zip(configs_dir_vector, [scaled_img, scaled_img_WB])
-
-            loading_name = ""
-            if data_config != "RGB"
-                if data_config == "BW"
-                    loading_name = name
-                else
-                    loading_name = replace(name, "BW" => "WB")
-                end
-            else
-                loading_name = name
-            end
-
-            @info data_config
-            # ===-===-
-            # Get cycles and their persistence
-            alg = :homology
-            reps = true
-            cutoff = PERSISTENCE_THRESHOLD
-            homology_config = @dict alg reps cutoff input_img
-
-            homology_data, p = produce_or_load(
-                ripserer_computations_dir(
-                    CONFIG.DATA_SET,
-                    "image_$(replace(loading_name, "$(extension)"=>""))",
-                ), # path
-                homology_config, # config
-                prefix = "homology_info", # file prefix
-                # force=true # force computations
-            ) do homology_config
-                @unpack alg, reps, cutoff, input_img = homology_config
-                println("\tStarting homology computations...")
-                homolgy_result = ripserer(
-                    Cubical(input_img),
-                    cutoff = cutoff,
-                    reps = reps,
-                    alg = alg,
-                )
-                println("\tFinished homology computations. ")
-                # Last line is the dictionary with the results
-                Dict("homolgy_result" => homolgy_result)
-            end # produce_or_load
-
-            homology_info = homology_data["homolgy_result"]
-
-            for (dim_index, selected_dim) in enumerate([0, 1])
-                births = [barcode[1] for barcode in homology_info[dim_index]]
-                deaths = [barcode[2] for barcode in homology_info[dim_index]]
-                persistances = [
-                    persistence(barcode) for
-                    barcode in homology_info[dim_index] if !isinf(persistence(barcode))
-                ]
-
-                # handle infs bars
-                births = replace(births, Inf => 255)
-                deaths = replace(deaths, Inf => 255)
-                all_infs = findall(
-                    x -> isinf(x),
-                    [persistence(barcode) for barcode in homology_info[dim_index]],
-                )
-                persistances = vcat(persistances, [255 for _ = 1:length(all_infs)]...)
-
-                # ===-
-                bd_data = [hcat(births, deaths)]
-                persistances = deaths - births
-                barcodes =
-                    [MyPair(b, d) for (b, d) in zip(births, deaths)] |> PersistenceBarcodes
-
-                # get betti curve from barcodes
-                x_range = 0:255
-
-                if selected_dim == 1
-                    betticurve_pt1 =
-                        [(births .<= x .&& deaths .> x) |> sum for x in x_range[1:255]]
-                    betticurve = vcat(betticurve_pt1, [0])
-                else
-                    betticurve_pt1 =
-                        [(births .<= x .&& deaths .> x) |> sum for x in x_range[1:255]]
-                    betticurve =
-                        vcat(betticurve_pt1, [(births .<= 255 .&& deaths .>= 255) |> sum])
-                end
-
-                bettis = Dict(:x => x_range, :y => betticurve)
-
-                persistence_data[data_config]["dim$(selected_dim)"][loading_name] = Dict()
-                persistence_data[data_config]["dim$(selected_dim)"][loading_name]["landscapes"] =
-                    PersistenceLandscape(barcodes)
-                persistence_data[data_config]["dim$(selected_dim)"][loading_name]["barcodes"] =
-                    bd_data
-                persistence_data[data_config]["dim$(selected_dim)"][loading_name]["betti"] =
-                    bettis
-            end # selected_dim
-        end # config
-    end #file
-end
-
-
-## ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
+# ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Do the plotting
 
 files_names =
@@ -175,14 +21,7 @@ files_names =
         occursin(CONFIG.DATA_CONFIG, k)
     ] |> unique
 
-
 @info files_names
-
-# sort_by_death = if CONFIG.DATA_CONFIG == "WB"
-#     true
-# else
-#     false
-# end
 
 # ===-===-
 selected_fontsize = 9
@@ -242,7 +81,7 @@ for name in files_names
         ax.yticklabelsize = selected_fontsize - 2
         ax.titlesize = selected_fontsize
     end
-    # ===-===- 
+    # ===-===-
     for (metric_index, label) in zip([2, 3], ["A.U.", "Cycle index"])
         Label(
             fgl[metric_index, 1],
@@ -449,7 +288,6 @@ for name in files_names
     end
     safesave(out_name, f)
 end
-# end 
 
 ## ===-===-
 do_nothing = "ok"

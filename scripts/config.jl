@@ -46,6 +46,7 @@ ENV["GKSwstype"] = "100"
 # Datasets paths configuration
 raw_paths = [
     ("art",),
+    ("art-cropped",),
     ("pseudoart",),
     ("Jarema",),
     ("Kandinsky",),
@@ -54,13 +55,22 @@ raw_paths = [
     ("Richter",),
     ("Rothko",),
     ("SimpleExamples",),
+    ("ManoelVeiga",),
+    ("McKeever",),
+    ("self-forgery",),
+    ("pointism",),
+    ("Rothko-cropped2",),
+    ("Richter-cropped2",),
+    ("Kandinsky-cropped2",),
+    ("Malevich-cropped2",),
+    ("Jarema-cropped2",),
 ]
 
 # ===-===-
 # Named groups for batch processing. Anything not listed here is treated as a
 # literal directory name under exp_raw/ and checked at runtime.
 const dataset_groups = Dict(
-    "main"       => ["art-cropped", "pseudoart"],
+    "main" => ["art-cropped", "pseudoart"],
     "additional" => ["Jarema", "Malewicz", "Pollock", "Kandinsky", "Richter", "Rothko"],
 )
 
@@ -74,7 +84,9 @@ function get_data_sets(data_set)
             @info "\"$data_set\" not a named group — using directory: $dir"
             return [(data_set,)]
         else
-            error("Dataset \"$data_set\" is not a named group and directory does not exist: $dir")
+            error(
+                "Dataset \"$data_set\" is not a named group and directory does not exist: $dir",
+            )
         end
     end
 end

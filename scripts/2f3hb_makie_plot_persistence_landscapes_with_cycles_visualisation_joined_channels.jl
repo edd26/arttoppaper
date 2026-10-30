@@ -12,7 +12,7 @@ using Images
 using CairoMakie
 using Pipe
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 
 # ===-===-===-
 "LandscapesPlotting.jl" |> srcdir |> include
@@ -37,38 +37,38 @@ max_land_height = √2 * 255 * 0.5
 
 scaling_factor = 1
 
-extension = ".jpg"
-
 # ===-
 points_per_cm = 28.3465 * 3
 
 # 1724 pixels
-plt_width = 17.6 * points_per_cm
-plt_height = 9.3 * points_per_cm * 3
+plt_height = 12.1 * points_per_cm
+# plt_width = 28.6 * points_per_cm
+plt_width = 1.58 * plt_height
+
 
 cleanup_filenames(files_names) = @pipe files_names .|>
-      split(_, "_rev")[1] |>
-      (x->split.(x, "_") .|> y->join(y[1:(end-1)], "_")) |>
-      unique
+                                       split(_, "_rev")[1] |>
+                                       (x -> split.(x, "_") .|> y -> join(y[1:(end-1)], "_")) |>
+                                       unique
 unique_names = cleanup_filenames(files_names)
 
 suffixes = if occursin("RGB", CONFIG.DATA_CONFIG)
     ["R", "G", "B"]
-  else
-    [CONFIG.DATA_CONFIG, ]
-  end
+else
+    [CONFIG.DATA_CONFIG]
+end
 
 if CONFIG.DATA_CONFIG == "RGB_rev"
     suffixes .*= "_rev"
 end
 
-groupped_files_names = [map(c->f*"_$(c)", suffixes) for f in unique_names]
+groupped_files_names = [map(c -> f * "_$(c)", suffixes) for f in unique_names]
 
 
 for single_image_files_names in groupped_files_names
     @info "Now working on:" single_image_files_names
 
-    f = CairoMakie.Figure(size = (plt_width, plt_height))
+    f = CairoMakie.Figure(size=(plt_width, plt_height))
     fgl_main = CairoMakie.GridLayout(f[1, 1])
 
     for (row_index, name) in enumerate(single_image_files_names)
@@ -76,7 +76,9 @@ for single_image_files_names in groupped_files_names
 
 
         input_img_name = name * extension
-        if !occursin(DATA_CONFIG, name) && CONFIG.DATA_CONFIG != "RGB" && CONFIG.DATA_CONFIG != "RGB_rev"
+        if !occursin(DATA_CONFIG, name) &&
+           CONFIG.DATA_CONFIG != "RGB" &&
+           CONFIG.DATA_CONFIG != "RGB_rev"
             input_img_name = name * "_$(DATA_CONFIG)" * extension
         else
             input_img_name = name * extension
@@ -95,10 +97,10 @@ for single_image_files_names in groupped_files_names
 
         fgl = CairoMakie.GridLayout(fgl_main[row_index, 1])
         ax_barcode0 =
-            CairoMakie.Axis(fgl[3, 3], xlabel = "Pixel intensity", ylabel = "Cycle index")
-        ax_barcode1 = CairoMakie.Axis(fgl[3, 4], xlabel = "Pixel intensity")
+            CairoMakie.Axis(fgl[3, 3], xlabel="Pixel intensity", ylabel="Cycle index")
+        ax_barcode1 = CairoMakie.Axis(fgl[3, 4], xlabel="Pixel intensity")
 
-        ax_pland0 = CairoMakie.Axis(fgl[2, 3], ylabel = "A.U.")
+        ax_pland0 = CairoMakie.Axis(fgl[2, 3], ylabel="A.U.")
         ax_pland1 = CairoMakie.Axis(fgl[2, 4])
 
         isolines_with_colormap = true
@@ -109,13 +111,13 @@ for single_image_files_names in groupped_files_names
             hidespines!(ax_empty)
         end
 
-        ax_img = CairoMakie.Axis(fgl[:, 1], aspect = AxisAspect(1434 / 2048))
-        ax_cycles = CairoMakie.Axis(fgl[:, 2], aspect = AxisAspect(1434 / 2048))
+        ax_img = CairoMakie.Axis(fgl[:, 1], aspect=AxisAspect(1434 / 2048))
+        ax_cycles = CairoMakie.Axis(fgl[:, 2], aspect=AxisAspect(1434 / 2048))
         # ===-===- 
         # add lablels 
         for (metric_index, metric) in zip([2, 3], ["Persistence landscape", "Barcodes"])
-            Box(fgl[metric_index, 5], color = :gray90)
-            Label(fgl[metric_index, 5], metric, rotation = -pi / 2, tellheight = false)
+            Box(fgl[metric_index, 5], color=:gray90)
+            Label(fgl[metric_index, 5], metric, rotation=-pi / 2, tellheight=false)
         end
 
         # ===-===-
@@ -142,35 +144,35 @@ for single_image_files_names in groupped_files_names
         else
             loaded_img'
         end
-        image!(ax_img, img_to_plot, interpolate = false)
+        image!(ax_img, img_to_plot, interpolate=false)
         ax_img.yreversed = true
 
         # Plot hatmap
         CairoMakie.image!(
             ax_cycles,
             loaded_img[end:-1:1, :]',
-            alpha = 0.4,
-            interpolate = false,
+            alpha=0.4,
+            interpolate=false,
         )
 
         if !all(isnan.(cycles_on_image_canvas))
             cycles_plt = CairoMakie.heatmap!(
                 ax_cycles,
                 cycles_on_image_canvas[end:-1:1, :]',
-                colormap = cgrad(:roma, rev = true),
-                alpha = 1.0,
-                interpolate = false,
-                colorrange = (0, 255),
+                colormap=cgrad(:roma, rev=true),
+                alpha=1.0,
+                interpolate=false,
+                colorrange=(0, 255),
             )
             if isolines_with_colormap
                 Colorbar(
                     fgl[4, 3:4],
                     cycles_plt,
-                    label = "Cycle Persistence",
-                    ticks = 0:50:255,
-                    vertical = false,
-                    flipaxis = false,
-                    ticklabelrotation = pi / 4,
+                    label="Cycle Persistence",
+                    ticks=0:50:255,
+                    vertical=false,
+                    flipaxis=false,
+                    ticklabelrotation=pi / 4,
                 )
             end
         else
@@ -182,20 +184,22 @@ for single_image_files_names in groupped_files_names
         color_vectors = [:linear_kgy_5_95_c69_n256, :sun]
         for (ax, local_dim, colour_vec) in
             zip([ax_pland0, ax_pland1], ["dim0", "dim1"], color_vectors)
-            max_colour_range =
-                size(persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"].land, 1)
+            max_colour_range = size(
+                persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"].land,
+                1,
+            )
             custom_colors = [
                 RGBf(c) for c in cgrad(
                     colour_vec,
                     max(2, max_colour_range),
-                    categorical = true,
-                    rev = false,
+                    categorical=true,
+                    rev=false,
                 )
             ]
             plot_persistence_landscape!(
                 ax,
                 persistence_data[CONFIG.DATA_CONFIG][local_dim][name]["landscapes"],
-                custom_colors = custom_colors,
+                custom_colors=custom_colors,
             )
             push!(pland_max_vals, max_colour_range)
         end
@@ -208,31 +212,35 @@ for single_image_files_names in groupped_files_names
             end
             Colorbar(
                 fgl[1, k+2],
-                limits = (0, pland_max_vals[k]),
-                ticks = 0:tick_step:pland_max_vals[k],
-                ticklabelrotation = pi / 4,
-                colormap = cgrad(
+                limits=(0, pland_max_vals[k]),
+                ticks=0:tick_step:pland_max_vals[k],
+                ticklabelrotation=pi / 4,
+                colormap=cgrad(
                     color_vectors[k],
                     max(2, pland_max_vals[k]),
-                    categorical = true,
-                    rev = false,
+                    categorical=true,
+                    rev=false,
                 ),
-                vertical = false,
-                label = "landscape layer, dimension $(k-1)",
+                vertical=false,
+                label="landscape layer, dimension $(k-1)",
             )
         end
 
-        colours = get_bettis_color_palete(min_dim = 0)
+        colours = get_bettis_color_palete(min_dim=0)
 
         if sort_by_death
-            persistence_dim0 = persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
-            persistence_dim1 = persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
+            persistence_dim0 =
+                persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
+            persistence_dim1 =
+                persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
             persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 2]), :]
             persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 2]), :]
         else
-            persistence_dim0 = persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
-            persistence_dim1 = persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
+            persistence_dim0 =
+                persistence_data[CONFIG.DATA_CONFIG]["dim0"][name]["barcodes"][1]
+            persistence_dim1 =
+                persistence_data[CONFIG.DATA_CONFIG]["dim1"][name]["barcodes"][1]
 
             persistence_dim0 = persistence_dim0[sortperm(persistence_dim0[:, 1]), :]
             persistence_dim1 = persistence_dim1[sortperm(persistence_dim1[:, 1]), :]
@@ -241,14 +249,14 @@ for single_image_files_names in groupped_files_names
         mplot_barcodes!(
             ax_barcode0,
             persistence_dim0,
-            colour = colours[1],
-            rev = sort_by_death,
+            colour=colours[1],
+            rev=sort_by_death,
         )
         mplot_barcodes!(
             ax_barcode1,
             persistence_dim1,
-            colour = colours[2],
-            rev = sort_by_death,
+            colour=colours[2],
+            rev=sort_by_death,
         )
 
         # ===-===-
@@ -256,34 +264,34 @@ for single_image_files_names in groupped_files_names
         for ax in [ax_img, ax_cycles]
             hidedecorations!(
                 ax,
-                label = true,
-                ticklabels = true,
-                ticks = true,
-                grid = true,
-                minorgrid = true,
-                minorticks = true,
+                label=true,
+                ticklabels=true,
+                ticks=true,
+                grid=true,
+                minorgrid=true,
+                minorticks=true,
             )
         end
 
         for (ax, local_dim) in zip([ax_pland0, ax_pland1], ["dim0", "dim1"])
-            CairoMakie.xlims!(ax, low = 0, high = 255)
-            CairoMakie.ylims!(ax, low = 0, high = max_land_height)
+            CairoMakie.xlims!(ax, low=0, high=255)
+            CairoMakie.ylims!(ax, low=0, high=max_land_height)
             ax.xticks = 0:20:255
             ax.yticks = 0:20:max_land_height
             ax.title = "Dimension $(split(local_dim, "dim")[2])"
 
             hidexdecorations!(
                 ax,
-                label = true,
-                ticklabels = true,
-                ticks = true,
-                grid = false,
-                minorgrid = false,
-                minorticks = false,
+                label=true,
+                ticklabels=true,
+                ticks=true,
+                grid=false,
+                minorgrid=false,
+                minorticks=false,
             )
         end
         for (ax, label) in zip([ax_barcode0, ax_barcode1], ["0", "1"])
-            CairoMakie.xlims!(ax, low = 0, high = 255)
+            CairoMakie.xlims!(ax, low=0, high=255)
             ax.xticks = 0:20:255
         end
 
@@ -303,6 +311,7 @@ for single_image_files_names in groupped_files_names
     end
 
     img_plot = f
+    display(f)
 
     # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
     @info "Saving."

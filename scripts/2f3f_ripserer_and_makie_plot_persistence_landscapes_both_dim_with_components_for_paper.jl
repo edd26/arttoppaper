@@ -47,20 +47,20 @@ data_folder = DATA_SET
 last_of_filtration = 6
 filtration_step = 1
 selected_dim = 1
-data_config = "BW"
-raw_img_name = "SimpleExamples"
-extension = ".png"
+raw_img_name = DATA_SET
 
 alg = :homology
 reps = true
 
 simple_img_dir(args...) =
-    datadir("exp_pro", "img_initial_preprocessing", "$(data_config)", raw_img_name, args...)
+    datadir("exp_pro", "img_initial_preprocessing", CONFIG.DATA_CONFIG, raw_img_name, args...)
 
 files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
 files_list = filter(x -> occursin("$(CONFIG.DATA_CONFIG)", x), files_list)
-files_names =
-    @pipe files_list |> [k[1] for k in split.(_, ".")] |> [k[1] for k in split.(_, "_dim=")]
+extension = isempty(files_list) ? ".png" : splitext(first(files_list))[2]
+files_names = [split(splitext(f)[1], "_dim=")[1] for f in files_list]
+
+@assert !isempty(files_names)
 
 # files_list = dipha_bd_info_export_folder("BW", data_folder, "dim=$(selected_dim)") |> readdir |> filter_out_hidden |> sort
 # files_list = filter(x -> occursin("$(CONFIG.DATA_CONFIG)", x), files_list)
@@ -74,7 +74,7 @@ persistence_data = populate_dict!(
     final_structure = OrderedDict(),
 )
 
-file = files_names[end-2]
+# file = files_names[end-2]
 for file in files_names
     name = split(file, "_dim=")[1]
 
@@ -166,7 +166,6 @@ for file in files_names
     fgl_all = CairoMakie.GridLayout(f[1, 1])
     for (d_index, data_config) in enumerate(["BW", "WB"])
         fgl = CairoMakie.GridLayout(fgl_all[d_index, 1])
-        extension = ".png"
 
         if data_config == "WB"
             sort_by_death = true

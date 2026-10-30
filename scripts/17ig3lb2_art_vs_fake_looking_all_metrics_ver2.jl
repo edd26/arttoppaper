@@ -11,7 +11,7 @@ using HypothesisTests: OneWayANOVATest, MannWhitneyUTest
 import LaTeXStrings: latexstring
 
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 
 
 "ECDFPlotting.jl" |> srcdir |> include
@@ -28,6 +28,7 @@ color_palette = Makie.wong_colors();
 data_keys = ["art", "pseudoart"]
 func = parameters_vec[1]
 
+do_save = false
 # Test selection
 do_KW = false
 do_mann_whitney = true
@@ -48,7 +49,7 @@ for looking_type in [:looking, :not_looking]
     end
 
     for (metric_index, selected_metric) in enumerate(labels_vec)
-        f2 = Figure(size = (1.5fig_width, fig_height))
+        f2 = Figure(size=(1.5fig_width, fig_height))
         fgl_sub = CairoMakie.GridLayout(f2[1, 1])
         @info "Working on: $(selected_metric )"
         if occursin("mse", "$(selected_metric)")
@@ -63,7 +64,7 @@ for looking_type in [:looking, :not_looking]
         for (func_index, func) in parameters_vec[func_range] |> enumerate
             @info "Working on: $(func)"
             func_related_df =
-                filter(row -> row.parameter == "$(func)", ECDF_not_looking_error_df)
+                filter(row -> row.parameter == "$(func)", ECDF_from_feature_map_error_df)
 
             all_vals = vcat(func_related_df[:, selected_metric])
             min_val = min([x for x in all_vals if !isnan(x)]...)
@@ -132,28 +133,28 @@ for looking_type in [:looking, :not_looking]
             stat_test_result, test_p_value = get_p_values(
                 vec1,
                 vec2;
-                do_KW = do_KW,
-                do_mann_whitney = do_mann_whitney,
-                do_signed_rank = do_signed_rank,
-                do_fdr_miller = do_fdr_miller,
+                do_KW=do_KW,
+                do_mann_whitney=do_mann_whitney,
+                do_signed_rank=do_signed_rank,
+                do_fdr_miller=do_fdr_miller,
             )
 
             fgl = CairoMakie.GridLayout(fgl_sub[1, func_index])
             ax_scatter, ax_boxplot, ax_estimate =
-                set_up_ax_distro_plt(fgl; scatter_label = scatter_label)
+                set_up_ax_distro_plt(fgl; scatter_label=scatter_label)
             do_distro_plot(
                 ax_scatter,
                 ax_boxplot,
                 ax_estimate,
                 vec1,
                 vec2;
-                art_val = vec1_val,
-                pseudoart_val = vec2_val,
-                color_palette = color_palette,
+                art_val=vec1_val,
+                pseudoart_val=vec2_val,
+                color_palette=color_palette,
             )
             ax_scatter.xticks = (vec1_val:vec2_val, ["Art", "Pseudo-art"])
             for ax in [ax_scatter, ax_boxplot, ax_estimate]
-                CairoMakie.ylims!(ax, low = y_low, high = y_high)
+                CairoMakie.ylims!(ax, low=y_low, high=y_high)
             end
 
             if test_p_value < 0.05
@@ -170,11 +171,11 @@ for looking_type in [:looking, :not_looking]
                     bracket_y,
                     vec2_val,
                     bracket_y,
-                    offset = 0,
-                    text = p_marker,
-                    style = :square,
-                    fontsize = 30,
-                    textoffset = -1,
+                    offset=0,
+                    text=p_marker,
+                    style=:square,
+                    fontsize=30,
+                    textoffset=-1,
                 )
             else
                 p_marker = ""
@@ -204,11 +205,11 @@ for looking_type in [:looking, :not_looking]
             Label(
                 fgl[0, :],
                 "$(indicator) $(d_label), $(func_str)" |> latexstring,
-                tellheight = true,
-                tellwidth = false,
-                fontsize = 18,
-                justification = :left,
-                halign = :left,
+                tellheight=true,
+                tellwidth=false,
+                fontsize=18,
+                justification=:left,
+                halign=:left,
             )
 
         end # func
@@ -239,21 +240,25 @@ for looking_type in [:looking, :not_looking]
             stattest_folder = "OneWayANOVATest"
         end
 
-        # folder_name =
-        folder_arg = join(
-            [
-                "$(CONFIG.DATA_CONFIG)_window=$(window_size)",
-                "$(stattest_folder)",
-                selected_metric,
-                looking_type,
-            ],
-            "_",
-        )
-        final_name1 = image_export_dir(folder_arg, out_name * ".png")
-        @info "Saving under the name $(final_name1)"
-        safesave(final_name1, f2)
-        final_name2 = image_export_dir(folder_arg, "pdf", out_name * ".pdf")
-        safesave(final_name2, f2)
+        display(f2)
+        if do_save
+            # folder_name =
+            folder_arg = join(
+                [
+                    "$(CONFIG.DATA_CONFIG)_window=$(window_size)",
+                    "$(stattest_folder)",
+                    selected_metric,
+                    looking_type,
+                ],
+                "_",
+            )
+
+            final_name1 = image_export_dir(folder_arg, out_name * ".png")
+            @info "Saving under the name $(final_name1)"
+            safesave(final_name1, f2)
+            final_name2 = image_export_dir(folder_arg, "pdf", out_name * ".pdf")
+            safesave(final_name2, f2)
+        end # do_save
     end # selected_metric
 end # looking_type 
 

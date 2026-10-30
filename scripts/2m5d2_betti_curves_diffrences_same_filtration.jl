@@ -220,31 +220,6 @@ for d in all_datasets
 
 end # 
 #############
-#
-
-closest_to_0_4 = abs.(betti_difference_df.norm_difference .- 0.4) |> sortperm
-betti_difference_df[closest_to_0_4, :]
-
-csv_export_dir(args...) = ripserer_computations_dir("..", "$(scriptprefix)_bettis_differences", args...)
-csv_export_dir() |> ispath || csv_export_dir() |> mkdir
-output_csv = csv_export_dir("$(scriptprefix)_bettis_differences.csv")
-if !isfile(output_csv)
-    @info "Saving csv file for original data"
-    open(output_csv, "w") do io
-        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
-        writedlm(io, eachrow(betti_difference_df), ',')     # write the data rows
-    end
-end
-
-output_csv_sorted = csv_export_dir("$(scriptprefix)_bettis_differences_sorted0-4.csv")
-if !isfile(output_csv_sorted)
-    @info "Saving csv file for sorted data"
-    open(output_csv_sorted, "w") do io
-        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
-        writedlm(io, eachrow(betti_difference_df[closest_to_0_4, :]), ',')     # write the data rows
-    end
-end
-
 #################
 
 # ===-===-===-===-===-

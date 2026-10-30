@@ -12,7 +12,7 @@ using StatsBase: ecdf
 "ECDFPlotting.jl" |> srcdir |> include
 "statistics_utils.jl" |> srcdir |> include
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 scriptprefix = "17jg3k2"
@@ -29,7 +29,7 @@ color_palette = Makie.wong_colors();
 func = parameters_vec[1]
 metric_keys = [:ECDF_lnl_mse]
 
-colours_indidcators = [(3, 4), (5, 2), (1, 6)]
+colours_indidcators = [(5, 2), (3, 4), (1, 6)]
 
 markers_list = [
     :pentagon,
@@ -49,12 +49,13 @@ markers_list = [
 # ===-===-===-===-
 # Test for general effect
 func = density_scaled
+func_range = 1:3
 
 selected_metric = metric_keys[1]
-f2 = Figure(size = (2fig_width, 3fig_height));
+f2 = Figure(size=(2fig_width, 3fig_height));
 for (func_index, func) in parameters_vec[func_range] |> enumerate
     @info "$(func)"
-    func_related_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_error_df)
+    func_related_df = filter(row -> row.parameter == "$(func)", ECDF_from_feature_map_error_df)
 
     metric_index = 1
     selected_metric = metric_keys[1]
@@ -110,36 +111,36 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
 
     ax_scatter1 = CairoMakie.Axis(
         fgl[1, 1],
-        ylabel = scatter_label,
-        xlabel = L"ME(ECDF_{looking}-ECDF_{not\;looking})",
+        ylabel=scatter_label,
+        xlabel=L"ME(ECDF_{looking}-ECDF_{not\;looking})",
     )
     ax_scatter2 = CairoMakie.Axis(
         fgl[1, 2],
-        ylabel = "",
-        xlabel = L"ME(ECDF_{looking}-ECDF_{not\;looking})",
+        ylabel="",
+        xlabel=L"ME(ECDF_{looking}-ECDF_{not\;looking})",
     )
-    ax_boxplot = CairoMakie.Axis(fgl[1, 3], xtrimspine = true, ylabel = scatter_label)
+    ax_boxplot = CairoMakie.Axis(fgl[1, 3], xtrimspine=true, ylabel=scatter_label)
     ax_estimate = CairoMakie.Axis(fgl[1, 4])
 
     for ax in [ax_scatter1, ax_scatter2]
         hidedecorations!(
             ax,
-            label = false,
-            ticklabels = false,
-            ticks = false,
-            grid = true,
-            minorgrid = true,
-            minorticks = true,
+            label=false,
+            ticklabels=false,
+            ticks=false,
+            grid=true,
+            minorgrid=true,
+            minorticks=true,
         )
     end
     hidexdecorations!(
         ax_boxplot,
-        label = false,
-        ticklabels = false,
-        ticks = false,
-        grid = true,
-        minorgrid = true,
-        minorticks = true,
+        label=false,
+        ticklabels=false,
+        ticks=false,
+        grid=true,
+        minorgrid=true,
+        minorticks=true,
     )
     hideydecorations!(ax_boxplot)
 
@@ -183,9 +184,9 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
                 ax,
                 x_data,
                 y_data,
-                markersize = 8,
-                marker = markers_list[k],
-                color = (color_palette[color_values[i]], 0.4),
+                markersize=8,
+                marker=markers_list[k],
+                color=(color_palette[color_values[i]], 0.4),
                 # alpha = 0.5
             )
         end
@@ -198,13 +199,18 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
         ax_boxplot,
         categories[not_nan_positions],
         values[not_nan_positions],
-        whiskerwidth = 0.5,
-        strokecolor = :black,
-        strokewidth = 1,
-        color = color_palette[color_indices][not_nan_positions],
+        whiskerwidth=0.5,
+        strokecolor=:black,
+        strokewidth=1,
+        color=color_palette[color_indices][not_nan_positions],
     )
 
-    violin_kwargs = (side = :right, strokecolor = :black, strokewidth = 1, alpha = 0.7)
+    violin_kwargs = (
+        side=:right,
+        strokecolor=:black,
+        strokewidth=1,
+        # alpha=0.7
+    )
     violin_alpha = 0.5
     for (k, values_vec) in enumerate(measure_vals_both)
         if length(measure_vals_both) > 2
@@ -219,7 +225,7 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
                 ax_estimate,
                 category_x_vals[not_nan_positions2],
                 values_vec[not_nan_positions2];
-                color = (category_colour[k], violin_alpha),
+                color=(category_colour[k], violin_alpha),
                 violin_kwargs...,
             )
         end
@@ -230,10 +236,10 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
     ax_boxplot.xticks = ([xtick_start, xtick_end], ["Art", "Pseudo-art"])
 
     for ax in [ax_scatter1, ax_scatter2, ax_boxplot, ax_estimate]
-        CairoMakie.ylims!(ax, low = y_low, high = y_high)
+        CairoMakie.ylims!(ax, low=y_low, high=y_high)
     end
     for ax in [ax_scatter1, ax_scatter2]
-        CairoMakie.xlims!(ax, low = x_low, high = x_high)
+        CairoMakie.xlims!(ax, low=x_low, high=x_high)
     end
     f2
 
@@ -251,11 +257,11 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
             bracket_y,
             xtick_end,
             bracket_y,
-            offset = 0,
-            text = p_marker,
-            style = :square,
-            fontsize = 30,
-            textoffset = -1,
+            offset=0,
+            text=p_marker,
+            style=:square,
+            fontsize=30,
+            textoffset=-1,
         )
     else
         p_marker = ""
@@ -275,11 +281,11 @@ for (func_index, func) in parameters_vec[func_range] |> enumerate
     Label(
         fgl[0, :],
         "$(indicator)",
-        tellheight = true,
-        tellwidth = false,
-        fontsize = 18,
-        justification = :left,
-        halign = :left,
+        tellheight=true,
+        tellwidth=false,
+        fontsize=18,
+        justification=:left,
+        halign=:left,
     )
 
     size_ga1 = 0.15
@@ -299,7 +305,7 @@ func_labels = Dict(
 labels = vcat([func_labels["$(k)"] for k in parameters_vec[func_range]]...)
 data_labels = [split(k, ",")[1] for k in labels][1:2]
 
-elements = reshape([PolyElement(polycolor = colors[i]) for i = 1:length(labels)], (2, 3))
+elements = reshape([PolyElement(polycolor=colors[i]) for i = 1:length(labels)], (2, 3))
 
 fgl3 = GridLayout(f2[end+1, :])
 for (i, legend_title) in
@@ -310,10 +316,10 @@ for (i, legend_title) in
         elements[:, i],
         data_labels,
         legend_title,
-        tellwidth = false,
-        nbanks = 2,
-        tellheight = true,
-        framevisible = false,
+        tellwidth=false,
+        nbanks=2,
+        tellheight=true,
+        framevisible=false,
     )
 end
 f2

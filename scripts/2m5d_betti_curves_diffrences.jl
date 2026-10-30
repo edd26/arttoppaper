@@ -21,7 +21,7 @@ using HypothesisTests
 import Base.Threads: @spawn, @sync
 import Dates: now
 
-CairoMakie.set_theme!(fonts = (; regular = "Arial", bold = "Arial Bold"))
+CairoMakie.set_theme!(fonts=(; regular="Arial", bold="Arial Bold"))
 # ===-===-===-
 "config.jl" |> scriptsdir |> include
 "loading_utils.jl" |> srcdir |> include
@@ -49,11 +49,13 @@ all_x_index = 1:256
 extension = ".jpg"
 selected_config = CONFIG.DATA_CONFIG
 
-all_datasets = vcat("all_pseudoart", artists_datasets)
+
+# all_datasets = vcat("all_pseudoart", artists_datasets)
+all_datasets = [d for d in artists_datasets if !(d in ["art", "pseudoart"])]
 
 # all_datasets =
 persistence_data =
-    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure = OrderedDict())
+    populate_dict!(Dict(), [all_datasets, ["BW", "WB"]], final_structure=OrderedDict())
 
 
 for d in all_datasets
@@ -111,17 +113,18 @@ end # d selected_ config
 # =====
 
 betti_difference_df = DataFrame(
-    dataset = String[],
-    integrated_betti1 = Float64[],
-    integrated_betti2 = Float64[],
-    norm_integrated_betti1 = Float64[],
-    norm_integrated_betti2 = Float64[],
-    config1 = String[],
-    dim1 = String[],
-    config2 = String[],
-    dim2 = String[],
-    difference = Float64[],
-    norm_difference = Float64[],
+    dataset=String[],
+    file=String[],
+    integrated_betti1=Float64[],
+    integrated_betti2=Float64[],
+    norm_integrated_betti1=Float64[],
+    norm_integrated_betti2=Float64[],
+    config1=String[],
+    dim1=String[],
+    config2=String[],
+    dim2=String[],
+    difference=Float64[],
+    norm_difference=Float64[],
 )
 
 bw = "_BW"
@@ -169,6 +172,7 @@ for d in all_datasets
             betti_difference_df,
             (
                 d,
+                f,
                 integrated_betti1,
                 integrated_betti2,
                 norm_integrated_betti1,
@@ -205,6 +209,7 @@ for d in all_datasets
             betti_difference_df,
             (
                 d,
+                f,
                 integrated_betti1,
                 integrated_betti2,
                 norm_integrated_betti1,
@@ -222,6 +227,61 @@ for d in all_datasets
 end # 
 #############
 #################
+# CSV exports
+csv_export_dir(args...) = projectdir("data", "exp_pro", "section2", "$(scriptprefix)_bettis_differences", args...)
+csv_export_dir() |> ispath || csv_export_dir() |> mkdir
+
+# ===-
+for dataset = all_datasets
+    for first_config in ["_BW", "_WB"]
+        the_other_config = (first_config == "_BW") ? "_WB" : "_BW"
+        dataset_df = @pipe filter(row -> row.config1 == first_config, betti_difference_df) |>
+                           filter(row -> row.dataset == dataset, _)
+        sorted_data_perm = dataset_df.norm_difference |> sortperm
+
+        output_csv = csv_export_dir("$(scriptprefix)_bettis_differences_$(dataset)_dim0$(first_config)-dim1$(the_other_config).csv")
+        # if !isfile(output_csv)
+        @info "Saving csv file for sorted original data"
+        open(output_csv, "w") do io
+            writedlm(io, [names(dataset_df)], ',')     # write column names as header
+            writedlm(io, eachrow(dataset_df[sorted_data_perm, :]), ',')     # write the data rows
+        end
+        # else
+        #     @info "Skipped saving, csv file already exists" output_csv
+        # end
+
+    end # first config
+end # dataset
+
+
+# ===-===-
+
+closest_to_0_4 = abs.(betti_difference_df.norm_difference .- 0.4) |> sortperm
+# betti_difference_df[closest_to_0_4, :]
+# betti_difference_df.norm_difference[closest_to_0_4, :]
+
+output_csv = csv_export_dir("$(scriptprefix)_bettis_differences.csv")
+if !isfile(output_csv)
+    @info "Saving csv file for original data"
+    open(output_csv, "w") do io
+        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
+        writedlm(io, eachrow(betti_difference_df), ',')     # write the data rows
+    end
+else
+    @info "Skipped saving, csv file already exists" output_csv
+end
+
+output_csv_sorted = csv_export_dir("$(scriptprefix)_bettis_differences_sorted0-4.csv")
+if !isfile(output_csv_sorted)
+    @info "Saving csv file for sorted data"
+    open(output_csv_sorted, "w") do io
+        writedlm(io, [names(betti_difference_df)], ',')     # write column names as header
+        writedlm(io, eachrow(betti_difference_df[closest_to_0_4, :]), ',')     # write the data rows
+    end
+else
+    @info "Skipped saving, csv file already exists" output_csv
+end
+
 
 #########3
 #################
@@ -230,19 +290,19 @@ end #
 
 datasets_combinations = vcat(
     [
-        all_datasets[all_datasets .!= "art".&&all_datasets .!= "pseudoart"],
-        all_datasets[all_datasets .!= "pseudoart"],
+        all_datasets[all_datasets.!="art".&&all_datasets.!="pseudoart"],
+        all_datasets[all_datasets.!="pseudoart"],
         ["art", "pseudoart"],
         ["art", "all_pseudoart"],
     ],
-    [[d, "all_pseudoart"] for d in artists_datasets[artists_datasets .!= "pseudoart"]],
+    [[d, "all_pseudoart"] for d in artists_datasets[artists_datasets.!="pseudoart"]],
 )
 non_art_labels_vec = vcat(
     ["all_pseudoart", "all_pseudoart", "pseudoart"],
     "all_pseudoart",
     [
         "all_pseudoart" for _ in
-        artists_datasets[artists_datasets .!= "art".&&artists_datasets .!= "pseudoart"]
+        artists_datasets[artists_datasets.!="art".&&artists_datasets.!="pseudoart"]
     ],
 )
 
@@ -261,13 +321,13 @@ second_selected_dim = "dim1"
 do_saving = false
 
 selected_colourscheme = :heat
-colours = cgrad(selected_colourscheme, 5, categorical = true)
+colours = cgrad(selected_colourscheme, 5, categorical=true)
 color_palettes = [colours[3:2:end], colours[2:2:end]]
 
 
 #selected_colourscheme = :berlin10
 selected_colourscheme = :lipari
-colours = cgrad(selected_colourscheme, 10, categorical = true)
+colours = cgrad(selected_colourscheme, 10, categorical=true)
 color_palettes = [colours[2:5:end], colours[3:5:end]]
 # selected_colourscheme = :managua10
 # colours = cgrad(selected_colourscheme, 10, categorical=true, rev=true)
@@ -296,7 +356,7 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
         ["All Art", "All Pseudo-art"]
     end
 
-    f2 = Figure(size = (plt_width, plt_height))
+    f2 = Figure(size=(plt_width, plt_height))
     fgl = CairoMakie.GridLayout(f2[1, 1])
 
     for func_index = 1:2:3
@@ -308,12 +368,12 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
         Label(
             fgl[1, func_index],
             "$(indicator)",
-            tellheight = false,
-            tellwidth = true,
-            fontsize = 18,
-            justification = :left,
-            halign = :left,
-            valign = :top,
+            tellheight=false,
+            tellwidth=true,
+            fontsize=18,
+            justification=:left,
+            halign=:left,
+            valign=:top,
         )
     end
 
@@ -339,15 +399,15 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
             filter(row -> row.dataset != non_art_label, filtered_differences_df).norm_difference
 
         title_sufix = @pipe map(
-                  x -> join(x, "_"),
-                  [
-                      [selected_first_config, first_selected_dim],
-                      [selected_second_config, second_selected_dim],
-                  ],
-              ) |>
-              (y -> "area(Betti" .* y .* ")") |>
-              join(_, " - ") |>
-              z -> "(" * z .* ")/average Betti"
+                                x -> join(x, "_"),
+                                [
+                                    [selected_first_config, first_selected_dim],
+                                    [selected_second_config, second_selected_dim],
+                                ],
+                            ) |>
+                            (y -> "area(Betti" .* y .* ")") |>
+                            join(_, " - ") |>
+                            z -> "(" * z .* ")/average Betti"
 
 
         # axis_label = L"$\frac{area(\beta^{WB}_{dim-1}) - area(\beta^{BW}_{dim1}) }{ mean ( area(\beta^{WB}_{dim-1}), area(\beta^{BW}_{dim1})) }$.}$"
@@ -368,14 +428,14 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
             pseudoart_differences,
             fgl_local,
             selected_datasets;
-            leged_title = "",# replace(title_sufix, "_" => " "),
-            y_low = -0.2,
-            y_high = 2.5,
-            ylabel = axis_label,
-            plot_labels = plot_labels,
-            add_legend = false,
-            add_stat_results = false,
-            color_palette = color_palettes[i],
+            leged_title="",# replace(title_sufix, "_" => " "),
+            y_low=-0.2,
+            y_high=2.5,
+            ylabel=axis_label,
+            plot_labels=plot_labels,
+            add_legend=false,
+            add_stat_results=false,
+            color_palette=color_palettes[i],
             # selected_test=MannWhitneyUTest
         )
 
@@ -402,9 +462,9 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
         joined_keys = join(selected_datasets, "-")
         version =
             "normalised_" * (@pipe replace(title_sufix, " " => "_") |>
-                   replace(_, "(" => "") |>
-                   replace(_, ")" => "") |>
-                   split(_, "/")[1])
+                                   replace(_, "(" => "") |>
+                                   replace(_, ")" => "") |>
+                                   split(_, "/")[1])
         out_img_name = "$(version)_$(joined_keys)"
         logfile = log_2m5d_dir(out_img_name * ".txt")
         open(logfile, "a") do fio
@@ -415,7 +475,7 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
     fgl3 = GridLayout(fgl[2, :])
 
     elements1, elements2 = map(
-        palette -> [PolyElement(polycolor = palette[i]) for i = 1:length(plot_labels)],
+        palette -> [PolyElement(polycolor=palette[i]) for i = 1:length(plot_labels)],
         color_palettes,
     )
     legend_colours = [[elements1[1], elements2[1]], [elements1[2], elements2[2]]]
@@ -430,12 +490,12 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
         legend_colours,
         legend_labels,
         plot_labels,
-        tellwidth = false,
-        nbanks = 2,
-        tellheight = true,
-        framevisible = false,
-        titleposition = :left,
-        orientation = :horizontal,
+        tellwidth=false,
+        nbanks=2,
+        tellheight=true,
+        framevisible=false,
+        titleposition=:left,
+        orientation=:horizontal,
         # titlefont=:regular
     )
 
@@ -459,10 +519,10 @@ for (selected_datasets, non_art_label) in zip(datasets_combinations, non_art_lab
         thr = "threshold=$(CONFIG.PERSISTENCE_THRESHOLD)"
 
         out_name = plot_2m5_dir("$(thr)_$(version)", out_img_name * ".png")
-        safesave(out_name, f2, dpi = 300)
+        safesave(out_name, f2, dpi=300)
 
         out_name = plot_2m5_dir("$(thr)_$(version)", "pdf", out_img_name * ".pdf")
-        safesave(out_name, f2, dpi = 300)
+        safesave(out_name, f2, dpi=300)
 
     end # selected_dataset 
 end # selected_first_config

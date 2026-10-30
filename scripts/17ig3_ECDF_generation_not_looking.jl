@@ -3,7 +3,6 @@ using DrWatson
 @quickactivate "arttopopaper"
 
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
-
 "17i_cycles_in_unit_coverage.jl" |> scriptsdir |> include
 
 using HypothesisTests
@@ -15,7 +14,8 @@ scriptprefix = "17ig3"
 df_info_storage(args...) = datadir(
     "exp_pro",
     "section17",
-    "$(scriptprefix)-ecdf_not_looking",
+    "$(scriptprefix)-ecdf_from_feature_maps",
+    CONFIG.DATA_CONFIG,
     "fixation_sequence=$(CONFIG.FIXATION_SEQUENCE)",
     args...,
 )
@@ -33,21 +33,24 @@ selected_data = [l for l in keys(unique_cycles_count_in_windows[window_size])][2
 img_name = [l for l in keys(unique_cycles_count_in_windows[window_size][selected_data])][5]
 func = parameters_vec[1]
 
-force_computaions = false
+force_computaions = true
+only_computations = true
 parameters_df = DataFrame(
     :data_name => String[],
     :img_name => String[],
     :parameter => String[],
     :window_size => Int[],
+    :config => String[],
     :parameters_values => Vector{Float64}[],
     :parameter_map => Matrix{Float64}[],
 )
 
-ECDF_not_looking_df = DataFrame(
+ECDF_from_feature_map_df = DataFrame(
     :data_name => [],
     :subject => String[],
     :session => Int[],
     :view => Union{Symbol,Int}[],
+    :config => String[],
     :img_name => String[],
     :parameter => String[],
     :window_size => Int[],
@@ -60,6 +63,10 @@ ECDF_not_looking_df = DataFrame(
     :mean_heatmap_in_window => [],
 )
 
+# func_range = 3:3
+
+data_config = CONFIG.DATA_CONFIG
+func = parameters_vec[2]
 for func in parameters_vec[func_range]
     @info "Working on: $(func)"
 
@@ -83,27 +90,30 @@ for func in parameters_vec[func_range]
                     window_size,
                     homology_info[selected_data][img_name],
                     perimeter_info[selected_data][img_name];
-                    default_map_value = default_map_value,
+                    default_map_value=default_map_value,
                 )
                 if typeof(parameters_values) != Vector{Float64}
                     parameters_values = Vector{Float64}(parameters_values)
                 end
 
-                push!(
-                    parameters_df,
-                    (
-                        selected_data,
-                        img_name,
-                        "$(func)",
-                        window_size,
-                        parameters_values,
-                        parameter_map,
-                    ),
-                )
+                if !only_computations
+                    push!(
+                        parameters_df,
+                        (
+                            selected_data,
+                            img_name,
+                            "$(func)",
+                            window_size,
+                            data_config,
+                            parameters_values,
+                            parameter_map,
+                        ),
+                    )
+                end
                 ecdf_img = ecdf(parameters_values)
 
-                session_index = 1
-                view_indicator = ""
+                # session_index = 1
+                # view_indicator = ""
                 # for session_index = [1, 2], view_indicator = ["", "s2"]
                 # @info "\t\t\t\tWorking on session $(session_index) and view $(view_indicator)"
                 for session_index = 1:total_sessions,
@@ -113,15 +123,15 @@ for func in parameters_vec[func_range]
 
                     parameter = "$(func)"
                     ecdf_generation_config =
-                        @dict window_sizes unique_cycles_count_in_windows total_subjects window_size func selected_data et_df img_name session_index parameter
+                        @dict window_sizes unique_cycles_count_in_windows total_subjects window_size func selected_data et_df img_name session_index parameter data_config
                     if !isnan(default_map_value)
                         ecdf_generation_config[:default_map_value] = default_map_value
                     end
-                    ECDF_not_looking_data, p = produce_or_load(
+                    ECDF_data, p = produce_or_load(
                         df_info_storage("$(func)"), # path
                         ecdf_generation_config, # config
-                        prefix = "p_value_df", # file prefix
-                        force = force_computaions, # force computations
+                        prefix="p_value_df", # file prefix
+                        force=force_computaions, # force computations
                     ) do ecdf_generation_config
                         @unpack window_sizes,
                         unique_cycles_count_in_windows,
@@ -132,15 +142,17 @@ for func in parameters_vec[func_range]
                         et_df,
                         img_name,
                         session_index,
-                        parameter = ecdf_generation_config
+                        parameter,
+                        data_config = ecdf_generation_config
 
                         session_df = filter(row -> row.Session == session_index, et_df)
 
-                        ECDF_not_looking_local_df = DataFrame(
+                        ECDF_local_df = DataFrame(
                             :data_name => [],
                             :subject => String[],
                             :session => Int[],
                             :view => Union{Symbol,Int}[],
+                            :config => String[],
                             :img_name => String[],
                             :parameter => String[],
                             :window_size => Int[],
@@ -157,7 +169,7 @@ for func in parameters_vec[func_range]
                         img_number = get_img_number(
                             selected_data,
                             img_name;
-                            data_config = CONFIG.DATA_CONFIG,
+                            data_config=data_config,
                         )
                         for (k, subject) in
                             subjects_name[selected_data][subject_range] |> enumerate
@@ -168,7 +180,7 @@ for func in parameters_vec[func_range]
                                 view_and_img_df = filter(
                                     row ->
                                         row.Stimulus == "$(img_number)s2.jpg" ||
-                                        row.Stimulus == "$(img_number).jpg",
+                                            row.Stimulus == "$(img_number).jpg",
                                     subject_df,
                                 )
                             else
@@ -219,19 +231,9 @@ for func in parameters_vec[func_range]
                                     [parameter_map[k[1], k[2]] for k in empty_positions],
                                 )
 
-                                # f = Figure();
-                                # ax = CairoMakie.Axis(f[1,1]);
-                                # CairoMakie.ecdfplot!(ax, looked_values)
-                                # CairoMakie.ecdfplot!(ax, parameters_values)
-                                # CairoMakie.ecdfplot!(ax, not_looked_values)
-                                # f
-                                # Sanity check with the get_heatmap_windows function- values below should be in those returned by the func
-                                # nonempty_positions = [p for (p, v) in mean_heatmap_in_window if v != 0]
-                                # [parameter_map[k[1], k[2]] for k in nonempty_positions]
-
                                 # ===-
                                 ecdf_viewing =
-                                    ecdf(looked_values; weights = hist_weights)
+                                    ecdf(looked_values; weights=hist_weights)
                                 ecdf_not_viewing = ecdf(not_looked_values)
                                 # ===-
                                 KS_test_results_looking = ApproximateTwoSampleKSTest(
@@ -252,12 +254,13 @@ for func in parameters_vec[func_range]
                                 end
 
                                 push!(
-                                    ECDF_not_looking_local_df,
+                                    ECDF_local_df,
                                     (
                                         selected_data,
                                         subject,
                                         session_index,
                                         view_index,
+                                        data_config,
                                         img_name,
                                         "$(func)",
                                         window_size,
@@ -272,12 +275,15 @@ for func in parameters_vec[func_range]
                                 )
                             end # if
                         end # subject
-                        Dict("ECDF_not_looking_results" => ECDF_not_looking_local_df)
+                        Dict("ECDF_results" => ECDF_local_df)
                     end # produce_or_load
-                    ECDF_not_looking_local_df =
-                        ECDF_not_looking_data["ECDF_not_looking_results"]
-                    global ECDF_not_looking_df =
-                        vcat(ECDF_not_looking_df, ECDF_not_looking_local_df)
+
+                    if !only_computations
+                        ECDF_local_df =
+                            ECDF_data["ECDF_results"]
+                        global ECDF_from_feature_map_df =
+                            vcat(ECDF_from_feature_map_df, ECDF_local_df)
+                    end
                 end # session, view index
             end # img_nam
         end # selected_data
@@ -285,7 +291,7 @@ for func in parameters_vec[func_range]
 end # func
 
 
-ECDF_not_looking_error_df = DataFrame(
+ECDF_from_feature_map_error_df = DataFrame(
     :data_name => [],
     :subject => String[],
     :session => Int[],
@@ -311,7 +317,7 @@ ECDF_not_looking_error_df = DataFrame(
 
 for func in parameters_vec[func_range]
     @info "Working on: $(func)"
-    func_related_df = filter(row -> row.parameter == "$(func)", ECDF_not_looking_df)
+    func_related_df = filter(row -> row.parameter == "$(func)", ECDF_from_feature_map_df)
 
     if func == persistence || func == max_persistence
         ecdf_range = 0:256
@@ -398,32 +404,34 @@ for func in parameters_vec[func_range]
                     )
                     # end
 
-                    push!(
-                        ECDF_not_looking_error_df,
-                        (
-                            d,
-                            subject,
-                            session_index,
-                            view_indicator,
-                            img_name,
-                            "$(func)",
-                            window_size,
-                            ecdf_looking_mse,
-                            ecdf_looking_error,
-                            ecdf_not_looking_mse,
-                            ecdf_not_looking_error,
-                            ecdf_looking_KS,
-                            ecdf_not_looking_KS,
-                            ecdf_looking_05,
-                            ecdf_not_looking_05,
-                            ecdf_looking_075,
-                            ecdf_not_looking_075,
-                            ecdf_lnl_me,
-                            ecdf_lnl_mse,
-                            ecdf_lnl_manual_KS,
-                            ecdf_lnl_KS_statistic,
-                        ),
-                    )
+                    if !only_computations
+                        push!(
+                            ECDF_from_feature_map_error_df,
+                            (
+                                d,
+                                subject,
+                                session_index,
+                                view_indicator,
+                                img_name,
+                                "$(func)",
+                                window_size,
+                                ecdf_looking_mse,
+                                ecdf_looking_error,
+                                ecdf_not_looking_mse,
+                                ecdf_not_looking_error,
+                                ecdf_looking_KS,
+                                ecdf_not_looking_KS,
+                                ecdf_looking_05,
+                                ecdf_not_looking_05,
+                                ecdf_looking_075,
+                                ecdf_not_looking_075,
+                                ecdf_lnl_me,
+                                ecdf_lnl_mse,
+                                ecdf_lnl_manual_KS,
+                                ecdf_lnl_KS_statistic,
+                            ),
+                        )
+                    end # only_computations 
                 end # ecdf subject 
             end # img
         end # sessions

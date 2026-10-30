@@ -18,6 +18,13 @@ import .CONFIG: SELECTED_DIM, PERSISTENCE_THRESHOLD, DATA_SET
 # ===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-===-
 # Image loading
 data_sets = CONFIG.get_data_sets(DATA_SET)
+data_sets = [
+    ("Rothko-cropped2",),
+    ("Richter-cropped2",),
+    ("Kandinsky-cropped2",),
+    ("Malevich-cropped2",),
+    ("Jarema-cropped2",),
+]
 
 for raw_path in data_sets
 

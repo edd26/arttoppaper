@@ -38,7 +38,7 @@ else
 end
 
 dataset_names = ["pseudoart", "art"]
-dataset_names = ["SimpleExamples"]
+# dataset_names = ["SimpleExamples"]
 
 # ===-===-===-
 
@@ -67,3 +67,19 @@ art_selection = unique(art_sub_fixations_df.Subject)
 pseudoart_selection = unique(pseudoart_sub_fixations_df.Subject)
 
 subjects_name = Dict("pseudoart" => pseudoart_selection, "art" => art_selection)
+
+# ===-##
+
+function get_art_export_name(img_name, config)
+    to_replace_with =
+        split(img_name, ".jpg")[1] |> (z -> replace(z, "_$(config)" => ""))
+    return "A" * to_replace_with
+end
+
+function get_pseudoart_export_name(img_name, config)
+    to_replace_with =
+        split(img_name, ".jpg")[1] |>
+        (z -> replace(z, "_$(config)" => "")) |>
+        y -> "$(CONFIG.pseudoart_name_to_order[y])"
+    return "F" * to_replace_with
+end

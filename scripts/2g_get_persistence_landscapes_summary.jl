@@ -33,13 +33,11 @@ landscapes_dir(args...) =
     datadir("exp_pro", "section2", script_prefix, "landscapes_df", args...)
 
 ## ===-===-===-===-===-===-===-===-===-===-
-set1 = ["art", "pseudoart"]
-data_sets = set1
+data_sets = [d[1] for d in CONFIG.get_data_sets(DATA_SET)]
 
 # ===-
 setup = DATA_CONFIG
 last_of_filtration = 255
-extension = ".jpg"
 
 land_areas = DataFrame(
     dataset = String[],
@@ -80,9 +78,9 @@ for data in data_sets
 
         files_list = simple_img_dir() |> readdir |> filter_out_hidden |> sort
         files_list = filter(x -> occursin("$(CONFIG.DATA_CONFIG)", x), files_list)
-        files_names = @pipe files_list |> [k[1] for k in split.(_, ".")]
+        extension = isempty(files_list) ? ".png" : splitext(first(files_list))[2]
+        files_names = [splitext(f)[1] for f in files_list]
 
-        file = files_names[1]
         for file in files_names
             @info "\tComputing landscapes info for file: " file
 
@@ -105,7 +103,7 @@ for data in data_sets
             homology_config = @dict alg reps cutoff input_img
 
             homology_data, p = produce_or_load(
-                ripserer_computations_dir(data_dir, "image_$(replace(file, ".jpg"=>""))"), # path
+                ripserer_computations_dir(data_dir, "image_$(replace(file, extension=>""))"), # path
                 homology_config, # config
                 prefix = "homology_info", # file prefix
                 # force=true # force computations
